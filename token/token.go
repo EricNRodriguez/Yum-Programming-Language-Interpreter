@@ -3,8 +3,8 @@ package token
 type TokenInterface interface {
 	Type() TokenType
 	Literal() string
-	LineNumber() int
-	FileName() string
+	Metadata() MetadataInterface
+	MetadataInterface
 }
 
 type Token struct {
@@ -27,4 +27,8 @@ func (t *Token) Type() TokenType {
 
 func (t *Token) Literal() string {
 	return t.literal
+}
+
+func (t *Token) Metadata() MetadataInterface {
+	return t.MetadataInterface
 }

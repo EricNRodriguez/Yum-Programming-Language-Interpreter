@@ -13,6 +13,7 @@ func main() {
 	)
 	f, _ := os.Open("test_files/progressive.txt")
 	l, _ = lexer.NewLexer(f)
+	defer l.Close()
 
 	fmt.Println("=============== ")
 	tok, err := l.NextToken()
