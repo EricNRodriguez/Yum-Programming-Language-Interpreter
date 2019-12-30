@@ -1,6 +1,18 @@
 package token
 
+import (
+	"errors"
+	"fmt"
+)
+
 type TokenType string
+
+func (tt TokenType) AssertEqual(ttTwo TokenType) (err error){
+	if tt != ttTwo {
+		err = errors.New(fmt.Sprintf("invalid token type | expected %v and found %v", tt, ttTwo))
+	}
+	return
+}
 
 const (
 	EOF     TokenType = "EOF"

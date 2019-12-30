@@ -13,7 +13,7 @@ type Token struct {
 	MetadataInterface
 }
 
-func NewToken(tt TokenType, l string, lN int, fN string) TokenInterface {
+func NewToken(tt TokenType, l string, lN int, fN string) *Token {
 	return &Token{
 		tokenType:         tt,
 		literal:           l,

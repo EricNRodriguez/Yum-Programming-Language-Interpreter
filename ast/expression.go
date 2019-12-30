@@ -3,73 +3,55 @@ package ast
 import (
 	"Yum-Programming-Language-Interpreter/token"
 	"fmt"
+	"strconv"
 )
 
 type Prefix struct {
 	token.TokenInterface
-	parent   NodeInterface
-	children [1]NodeInterface
+	expression ExpressionInterface
 }
 
-func NewPrefixExpression(t token.TokenInterface, e ExpressionInterface, p NodeInterface) ExpressionInterface {
+func NewPrefixExpression(t token.TokenInterface, e ExpressionInterface) *Prefix {
 	return &Prefix{
 		TokenInterface: t,
-		parent:         p,
-		children:       [1]NodeInterface{e},
+		expression: e,
 	}
 }
 
 func (p *Prefix) String() string {
-	return fmt.Sprintf("(%v%v)", p.Literal(), p.children[0].String())
-}
-
-func (p *Prefix) Parent() NodeInterface {
-	return p.parent
-}
-
-func (p *Prefix) Children() []NodeInterface {
-	return p.children[0:len(p.children)]
+	return fmt.Sprintf("(%v%v)", p.Literal(), p.expression.String())
 }
 
 func (p *Prefix) expressionFunction() {}
 
 type Infix struct {
 	token.TokenInterface
-	parent   NodeInterface // nil if expression is root
-	children [2]NodeInterface
+	leftExpression ExpressionInterface
+	rightExpression ExpressionInterface
+
 }
 
-func NewInfixExpression(t token.TokenInterface, le, re ExpressionInterface, p NodeInterface) ExpressionInterface {
+func NewInfixExpression(t token.TokenInterface, le, re ExpressionInterface) ExpressionInterface {
 	return &Infix{
 		TokenInterface: t,
-		parent:         p,
-		children:       [2]NodeInterface{le, re},
+		leftExpression: le,
+		rightExpression: re,
 	}
 }
 
 func (i *Infix) String() string {
-	return fmt.Sprintf("(%v %v %v)", i.children[0].String(), i.TokenInterface.Literal(), i.children[1].String())
-}
-
-func (i *Infix) Parent() NodeInterface {
-	return i.parent
-}
-
-func (i *Infix) Children() []NodeInterface {
-	return i.children[0:len(i.children)]
+	return fmt.Sprintf("(%v %v %v)", i.leftExpression.String(), i.TokenInterface.Literal(), i.rightExpression.String())
 }
 
 func (i *Infix) expressionFunction() {}
 
 type TokenExpression struct {
 	token.TokenInterface
-	parent NodeInterface
 }
 
-func NewTokenExpression(t token.TokenInterface, p NodeInterface) ExpressionInterface {
+func NewTokenExpression(t token.TokenInterface) ExpressionInterface {
 	return &TokenExpression{
 		TokenInterface: t,
-		parent:         p,
 	}
 }
 
@@ -77,12 +59,48 @@ func (te *TokenExpression) String() string {
 	return te.TokenInterface.Literal()
 }
 
-func (te *TokenExpression) Parent() NodeInterface {
-	return te.parent
-}
-
-func (te *TokenExpression) Children() []NodeInterface {
-	return nil
-}
-
 func (te *TokenExpression) expressionFunction() {}
+
+
+type IntegerExpression struct {
+	token.MetadataInterface
+	value int
+}
+
+func NewIntegerExpression(t token.TokenInterface, i int) *IntegerExpression {
+	return &IntegerExpression{
+		MetadataInterface: t.Metadata(),
+		value:          i,
+	}
+}
+
+func (ie *IntegerExpression) String() string {
+	return strconv.Itoa(ie.value)
+}
+
+func (te *IntegerExpression) expressionFunction() {}
+
+
+type BooleanExpression struct {
+	token.MetadataInterface
+	Value bool
+}
+
+func NewBooleanExpression(t token.TokenInterface, v bool) *BooleanExpression {
+	return &BooleanExpression{
+		MetadataInterface:t.Metadata(),
+		Value:v,
+	}
+}
+
+func (be *BooleanExpression) String() string {
+	if be.Value {
+		return "true"
+	}
+	return "false"
+}
+
+func (be *BooleanExpression) expressionFunction() {}
+
+
+

@@ -2,7 +2,7 @@ package main
 
 import (
 	"Yum-Programming-Language-Interpreter/lexer"
-	"Yum-Programming-Language-Interpreter/token"
+	"Yum-Programming-Language-Interpreter/parser"
 	"fmt"
 	"os"
 )
@@ -15,17 +15,13 @@ func main() {
 	l, _ = lexer.NewLexer(f)
 	defer l.Close()
 
-	fmt.Println("=============== ")
-	tok, err := l.NextToken()
+
+	p, err := parser.NewRecursiveDescentParser(l)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-
-	fmt.Println(tok.Type())
-	for tok.Type() != token.EOF {
-		tok, _ = l.NextToken()
-		fmt.Println(tok.Type())
-	}
-
+	prog := p.Parse()
+	fmt.Println(prog.String())
 }
+
