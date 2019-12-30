@@ -1,0 +1,14 @@
+
+func printHello(sup) {
+    var x = 3;
+    return sup;
+};
+
+var y = true;
+
+if (d > 2) {
+    var le = 10;
+} else {
+    var le = 11;
+};
+
