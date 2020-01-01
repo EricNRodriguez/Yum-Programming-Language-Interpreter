@@ -6,18 +6,18 @@ import (
 )
 
 type Program struct {
-	token.MetadataInterface
-	Statements []StatementInterface
+	token.Metadata
+	Statements []Statement
 }
 
-func NewProgram(m token.MetadataInterface, s ...StatementInterface) *Program {
+func NewProgram(m token.Metadata, s ...Statement) *Program {
 	return &Program{
-		MetadataInterface: m,
-		Statements: s,
+		Metadata: m,
+		Statements:        s,
 	}
 }
 
-func (p *Program) AddStatement(s StatementInterface) {
+func (p *Program) AddStatement(s Statement) {
 	if s != nil {
 		p.Statements = append(p.Statements, s)
 	}

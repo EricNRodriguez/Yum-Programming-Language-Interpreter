@@ -2,105 +2,126 @@ package ast
 
 import (
 	"Yum-Programming-Language-Interpreter/token"
+	"bytes"
 	"fmt"
 	"strconv"
 )
 
-type Prefix struct {
-	token.TokenInterface
-	expression ExpressionInterface
+type prefix struct {
+	token.Token
+	expression Expression
 }
 
-func NewPrefixExpression(t token.TokenInterface, e ExpressionInterface) *Prefix {
-	return &Prefix{
-		TokenInterface: t,
-		expression: e,
+func NewPrefixExpression(t token.Token, e Expression) Expression {
+	return &prefix{
+		Token: t,
+		expression:     e,
 	}
 }
 
-func (p *Prefix) String() string {
+func (p *prefix) String() string {
 	return fmt.Sprintf("(%v%v)", p.Literal(), p.expression.String())
 }
 
-func (p *Prefix) expressionFunction() {}
+func (p *prefix) expressionFunction() {}
 
-type Infix struct {
-	token.TokenInterface
-	leftExpression ExpressionInterface
-	rightExpression ExpressionInterface
-
+type infix struct {
+	token.Token
+	leftExpression  Expression
+	rightExpression Expression
 }
 
-func NewInfixExpression(t token.TokenInterface, le, re ExpressionInterface) ExpressionInterface {
-	return &Infix{
-		TokenInterface: t,
-		leftExpression: le,
+func NewInfixExpression(t token.Token, le, re Expression) Expression {
+	return &infix{
+		Token:  t,
+		leftExpression:  le,
 		rightExpression: re,
 	}
 }
 
-func (i *Infix) String() string {
-	return fmt.Sprintf("(%v %v %v)", i.leftExpression.String(), i.TokenInterface.Literal(), i.rightExpression.String())
+func (i *infix) String() string {
+	return fmt.Sprintf("(%v %v %v)", i.leftExpression.String(), i.Token.Literal(), i.rightExpression.String())
 }
 
-func (i *Infix) expressionFunction() {}
+func (i *infix) expressionFunction() {}
 
-type TokenExpression struct {
-	token.TokenInterface
-}
-
-func NewTokenExpression(t token.TokenInterface) ExpressionInterface {
-	return &TokenExpression{
-		TokenInterface: t,
-	}
-}
-
-func (te *TokenExpression) String() string {
-	return te.TokenInterface.Literal()
-}
-
-func (te *TokenExpression) expressionFunction() {}
-
-
-type IntegerExpression struct {
-	token.MetadataInterface
+type integerExpression struct {
+	token.Metadata
 	value int
 }
 
-func NewIntegerExpression(t token.TokenInterface, i int) *IntegerExpression {
-	return &IntegerExpression{
-		MetadataInterface: t.Metadata(),
-		value:          i,
+func NewIntegerExpression(t token.Token, i int) Expression {
+	return &integerExpression{
+		Metadata: t.Data(),
+		value:             i,
 	}
 }
 
-func (ie *IntegerExpression) String() string {
+func (ie *integerExpression) String() string {
 	return strconv.Itoa(ie.value)
 }
 
-func (te *IntegerExpression) expressionFunction() {}
+func (te *integerExpression) expressionFunction() {}
 
-
-type BooleanExpression struct {
-	token.MetadataInterface
+type booleanExpression struct {
+	token.Metadata
 	Value bool
 }
 
-func NewBooleanExpression(t token.TokenInterface, v bool) *BooleanExpression {
-	return &BooleanExpression{
-		MetadataInterface:t.Metadata(),
-		Value:v,
+func NewBooleanExpression(t token.Token, v bool) Expression {
+	return &booleanExpression{
+		Metadata: t.Data(),
+		Value:             v,
 	}
 }
 
-func (be *BooleanExpression) String() string {
+func (be *booleanExpression) String() string {
 	if be.Value {
 		return "true"
 	}
 	return "false"
 }
 
-func (be *BooleanExpression) expressionFunction() {}
+func (be *booleanExpression) expressionFunction() {}
 
+type functionCallExpression struct {
+	token.Metadata
+	FunctionName string
+	Parameters   []Expression
+}
 
+func NewFunctionCallExpression(md token.Metadata, fName string, params ...Expression) Expression {
+	return &functionCallExpression{
+		Metadata: md,
+		FunctionName:      fName,
+		Parameters:        params,
+	}
+}
 
+func (fc *functionCallExpression) String() string {
+	pBuff := bytes.Buffer{}
+	if fc.Parameters != nil {
+		for i, param := range fc.Parameters {
+			pBuff.WriteString(param.String())
+			if i != len(fc.Parameters) -1 {
+				pBuff.WriteString(", ")
+			}
+		}
+	}
+
+	return fmt.Sprintf("%v(%v)", fc.FunctionName, pBuff.String())
+}
+
+func (fc *functionCallExpression) expressionFunction() {}
+
+type identifierExpression struct {
+	*Identifier
+}
+
+func NewIdentifierExpression(t token.Token) Expression {
+	return &identifierExpression{
+		Identifier: NewIdentifier(t),
+	}
+}
+
+func (i *identifierExpression) expressionFunction() {}

@@ -4,14 +4,13 @@ import (
 	"Yum-Programming-Language-Interpreter/ast"
 	"Yum-Programming-Language-Interpreter/lexer"
 	"Yum-Programming-Language-Interpreter/token"
-	"fmt"
 	"errors"
+	"fmt"
 	"strconv"
 )
 
-type nudMethod func() ast.ExpressionInterface              // prefix
-type ledMethod func(ast.ExpressionInterface) ast.ExpressionInterface //infix
-
+type nudMethod func() ast.Expression                        // prefix
+type ledMethod func(expression ast.Expression) ast.Expression //infix
 
 type operatorPrecedence int
 
@@ -44,7 +43,8 @@ var (
 )
 
 type prattParserInterface interface {
-	parseExpression(precedence operatorPrecedence) ast.ExpressionInterface
+	parseExpression(precedence operatorPrecedence) ast.Expression
+	parseParameters() []ast.Expression
 	parserDataInterface
 }
 
@@ -58,16 +58,16 @@ func newPrattParser(l lexer.LexerInterface) (pp *prattParser, err error) {
 	var (
 		nMs = make(map[token.TokenType]nudMethod)
 		lMs = make(map[token.TokenType]ledMethod)
-		pd parserDataInterface
+		pd  parserDataInterface
 	)
 
 	if pd, err = newParserData(l); err != nil {
 		return
 	}
 
-	pp =  &prattParser{
-		nudMethods: nMs,
-		ledMethods: lMs,
+	pp = &prattParser{
+		nudMethods:          nMs,
+		ledMethods:          lMs,
 		parserDataInterface: pd,
 	}
 
@@ -95,7 +95,7 @@ func newPrattParser(l lexer.LexerInterface) (pp *prattParser, err error) {
 	return
 }
 
-func (pp *prattParser) parseExpression(precedence operatorPrecedence) (leftExpr ast.ExpressionInterface) {
+func (pp *prattParser) parseExpression(precedence operatorPrecedence) (leftExpr ast.Expression) {
 	prefixParseMethod, ok := pp.nudMethods[pp.currentToken().Type()]
 
 	if !ok {
@@ -132,8 +132,7 @@ func (pp *prattParser) currentPrecedence() operatorPrecedence {
 	return MINPRECEDENCE
 }
 
-
-func (pp *prattParser) parsePrefixOperator() (expr ast.ExpressionInterface){
+func (pp *prattParser) parsePrefixOperator() (expr ast.Expression) {
 	prefixOperatorToken := pp.currentToken()
 	pp.consume(1)
 	rightExpr := pp.parseExpression(PREFIX)
@@ -141,8 +140,7 @@ func (pp *prattParser) parsePrefixOperator() (expr ast.ExpressionInterface){
 	return
 }
 
-
-func (pp *prattParser) parseInteger() (expr ast.ExpressionInterface){
+func (pp *prattParser) parseInteger() (expr ast.Expression) {
 	var (
 		i   int
 		err error
@@ -163,22 +161,64 @@ func (pp *prattParser) parseInteger() (expr ast.ExpressionInterface){
 	return
 }
 
+func (pp *prattParser) parseParameters() (parameters []ast.Expression) {
+	parameters = make([]ast.Expression, 0)
 
-func (pp *prattParser) parseIdent() (expr ast.ExpressionInterface){
-	expr = ast.NewTokenExpression(pp.currentToken())
+	if pp.currentToken().Type() != token.LPAREN {
+		err := errors.New(fmt.Sprintf("invalid syntax on line %v, expected %v, receieved %v",
+			pp.currentToken().LineNumber(), token.LPAREN, pp.currentToken().Literal()))
+		pp.recordError(err)
+		parameters = nil
+		return
+	}
 	pp.consume(1)
+
+	for pp.currentToken().Type() != token.RPAREN && pp.currentToken().Type() != token.EOF {
+
+		parameters = append(parameters, pp.parseExpression(MINPRECEDENCE))
+
+		if pp.currentToken().Type() != token.RPAREN {
+
+			if err := pp.currentToken().Type().AssertEqual(token.COMMA); err != nil {
+				err := errors.New(fmt.Sprintf("error on line %v | %v", pp.currentToken().LineNumber(), err))
+				pp.recordError(err)
+				parameters = nil
+				return
+			}
+			pp.consume(1) // consume comma
+		}
+	}
+
+	pp.consume(1) // consume right paren
 	return
 }
 
+func (pp *prattParser) parseIdent() (expr ast.Expression) {
+	// function call
+	if pp.peekToken().Type() == token.LPAREN {
+		idenToken := pp.currentToken()
+		pp.consume(1)
+		if params := pp.parseParameters(); params != nil {
+			expr = ast.NewFunctionCallExpression(idenToken.Data(), idenToken.Literal(), params...)
+		} else {
+			pp.progressToNextSemicolon()
+			return
+		}
 
-func (pp *prattParser) parseBoolean() (expr ast.ExpressionInterface){
+	} else {
+		expr = ast.NewIdentifierExpression(pp.currentToken())
+		pp.consume(1)
+	}
+	return
+}
+
+func (pp *prattParser) parseBoolean() (expr ast.Expression) {
 	expr = ast.NewBooleanExpression(pp.currentToken(), pp.currentToken().Literal() == "true")
 	pp.consume(1)
 	return
 }
 
-
-func (pp *prattParser) parseGroupExpression() (expr ast.ExpressionInterface){
+func (pp *prattParser) parseGroupExpression() (expr ast.Expression) {
 	pp.consume(1)
 	if expr = pp.parseExpression(MINPRECEDENCE); expr == nil {
 		pp.progressToNextSemicolon()
@@ -194,7 +234,7 @@ func (pp *prattParser) parseGroupExpression() (expr ast.ExpressionInterface){
 	return
 }
 
-func (pp *prattParser) parseInfixOperator(leftExpr ast.ExpressionInterface) (expr ast.ExpressionInterface) {
+func (pp *prattParser) parseInfixOperator(leftExpr ast.Expression) (expr ast.Expression) {
 	t := pp.currentToken()
 	pp.consume(1)
 	rightExpr := pp.parseExpression(tokenOperPrecedence[t.Type()])

@@ -2,132 +2,136 @@ package ast
 
 import (
 	"Yum-Programming-Language-Interpreter/token"
-	"bytes"
+	"strings"
 	"fmt"
 )
 
-type Var struct {
-	token.TokenInterface
-	identifier token.TokenInterface
-	expression ExpressionInterface
+type varStatement struct {
+	token.Token
+	identifier token.Token
+	expression Expression
 }
 
-func NewVarStatement(t, i token.TokenInterface, e ExpressionInterface) *Var {
-	return &Var{
-		TokenInterface: t,
-		identifier: i,
-		expression: e,
+func NewVarStatement(t, i token.Token, e Expression) Statement {
+	return &varStatement{
+		Token: t,
+		identifier:     i,
+		expression:     e,
 	}
 }
 
-func (v *Var) String() string {
+func (v *varStatement) String() string {
 	return fmt.Sprintf("var %v = %v;", v.identifier.Literal(), v.expression.String())
 }
 
-func (v *Var) statementFunction() {}
+func (v *varStatement) statementFunction() {}
 
-type Return struct {
-	token.TokenInterface
-	expression ExpressionInterface
+type returnStatement struct {
+	token.Token
+	expression Expression
 }
 
-func NewReturnStatment(t token.TokenInterface, e ExpressionInterface) *Return {
-	return &Return{
-		TokenInterface: t,
-		expression: e,
+func NewReturnStatment(t token.Token, e Expression) Statement {
+	return &returnStatement{
+		Token: t,
+		expression:     e,
 	}
 }
 
-func (r *Return) String() string {
+func (r *returnStatement) String() string {
 	return fmt.Sprintf("return %v;", r.expression.String())
 }
 
-func (r *Return) statementFunction() {}
+func (r *returnStatement) statementFunction() {}
 
-type ExpressionStatement struct {
-	ExpressionInterface
+type expressionStatement struct {
+	Expression
 }
 
-func NewExpressionStatment(e ExpressionInterface) *ExpressionStatement {
-	return &ExpressionStatement{
-		ExpressionInterface: e,
+func NewExpressionStatment(e Expression) Statement {
+	return &expressionStatement{
+		Expression: e,
 	}
 }
 
-func (es *ExpressionStatement) String() string {
-	return fmt.Sprintf("%v;", es.ExpressionInterface.String())
+func (es *expressionStatement) String() string {
+	return fmt.Sprintf("%v;", es.Expression.String())
 }
 
-func (es *ExpressionStatement) statementFunction() {}
+func (es *expressionStatement) statementFunction() {}
 
-type BlockStatment struct {
-	token.MetadataInterface
-	Program
+type ifStatement struct {
+	token.Metadata
+	Condition Expression // Should make a boolean expression type to classify expressions with conditionals
+	IfBlock   []Statement
+	ElseBlock []Statement
 }
 
-func NewBlockStatement(t token.TokenInterface) *BlockStatment {
-	return &BlockStatment{
-		MetadataInterface: t.Metadata(),
-		Program: *NewProgram(t.Metadata()),
+func NewIfStatement(t token.Token, c Expression, tb, fb []Statement) Statement {
+	return &ifStatement{
+		Metadata: t.Data(),
+		Condition:         c,
+		IfBlock:           tb,
+		ElseBlock:         fb,
 	}
 }
 
-func (bs *BlockStatment) statementFunction() {}
-
-
-type IfStatement struct {
-	token.MetadataInterface
-	Condition  ExpressionInterface // Should make a boolean expression type to classify expressions with conditionals
-	IfBlock  *BlockStatment
-	ElseBlock *BlockStatment
-}
-
-func NewIfStatement(t token.TokenInterface, c ExpressionInterface, tb, fb *BlockStatment) *IfStatement {
-	return &IfStatement{
-		MetadataInterface:      t.Metadata(),
-		Condition:  c,
-		IfBlock:  tb,
-		ElseBlock: fb,
-	}
-}
-
-func (ifs *IfStatement) String() string {
+func (ifs *ifStatement) String() string {
 	if ifs.ElseBlock != nil {
-		return fmt.Sprintf("if %v { %v } else { %v };", ifs.Condition.String(), ifs.IfBlock.String(),
-			ifs.ElseBlock.String())
+		return fmt.Sprintf("if %v { %v } else { %v };", ifs.Condition.String(), statementArrayToString(ifs.IfBlock),
+			statementArrayToString(ifs.ElseBlock),)
 	} else {
-		return fmt.Sprintf("if %v { %v };", ifs.Condition.String(), ifs.IfBlock.String())
+		return fmt.Sprintf("if %v { %v };", ifs.Condition.String(), statementArrayToString(ifs.IfBlock),)
 	}
 }
 
-func (ifs *IfStatement) statementFunction() {}
+func (ifs *ifStatement) statementFunction() {}
 
-
-type FunctionDeclarationStatement struct {
-	token.MetadataInterface
+type functionDeclarationStatement struct {
+	token.Metadata
 	Name       string
-	Parameters []token.TokenInterface
-	Body       *BlockStatment
+	Parameters []*Identifier
+	Body       []Statement
 }
 
-func NewFuntionDeclarationStatement(t token.TokenInterface, n string, b *BlockStatment, ps ...token.TokenInterface) *FunctionDeclarationStatement {
-	return &FunctionDeclarationStatement{
-		MetadataInterface: t.Metadata(),
-		Name:       n,
-		Parameters: ps,
-		Body:       b,
+func NewFuntionDeclarationStatement(t token.Token, n string, b []Statement, ps ...*Identifier) Statement {
+	return &functionDeclarationStatement{
+		Metadata: t.Data(),
+		Name:              n,
+		Parameters:        ps,
+		Body:              b,
 	}
 }
 
-func (fds *FunctionDeclarationStatement) String() string {
-	pBuff := bytes.Buffer{}
-	for i := range fds.Parameters {
-		pBuff.WriteString(fds.Parameters[i].Literal())
-		if i != len(fds.Parameters)-1 {
-			pBuff.WriteString(", ")
-		}
+func (fds *functionDeclarationStatement) String() string {
+	var identifierNames = make([]string, len(fds.Parameters))
+	for i, p := range fds.Parameters {
+		identifierNames[i] = p.name
 	}
-	return fmt.Sprintf("func %v(%v) { %v };", fds.Name, pBuff.String(), fds.Body.String())
+	return fmt.Sprintf("func %v(%v) { %v };", fds.Name, strings.Join(identifierNames, ", "),
+		statementArrayToString(fds.Body))
 }
 
-func (fds *FunctionDeclarationStatement) statementFunction() {}
+func (fds *functionDeclarationStatement) statementFunction() {}
+
+
+type IdentifierStatement struct {
+	*Identifier
+}
+
+func NewIdentifierStatement(t token.Token) Statement {
+	return &IdentifierStatement{
+		Identifier: NewIdentifier(t),
+	}
+}
+
+func (i *IdentifierStatement) statementFunction() {}
+
+func statementArrayToString(staArr []Statement) string {
+	var strArr = make([]string, len(staArr))
+	for i, sta := range staArr {
+		strArr[i] = sta.String()
+	}
+	return strings.Join(strArr, ", ")
+}
+

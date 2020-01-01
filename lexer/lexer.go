@@ -10,7 +10,7 @@ import (
 )
 
 type LexerInterface interface {
-	NextToken() (token.TokenInterface, error)
+	NextToken() (token.Token, error)
 	Close() error
 }
 
@@ -89,7 +89,7 @@ func (l *Lexer) trailingTerminal() (t token.TokenType, ok bool) {
 	return
 }
 
-func (l *Lexer) NextToken() (t token.TokenInterface, err error) {
+func (l *Lexer) NextToken() (t token.Token, err error) {
 	var s = ""
 
 	// parsed the entire line

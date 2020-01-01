@@ -15,7 +15,6 @@ func main() {
 	l, _ = lexer.NewLexer(f)
 	defer l.Close()
 
-
 	p, err := parser.NewRecursiveDescentParser(l)
 	if err != nil {
 		fmt.Println(err)
@@ -24,4 +23,3 @@ func main() {
 	prog := p.Parse()
 	fmt.Println(prog.String())
 }
-

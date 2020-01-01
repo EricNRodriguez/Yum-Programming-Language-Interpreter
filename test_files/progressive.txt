@@ -1,5 +1,16 @@
 
-func printHello(sup) {
+func printHello(sup, z) {
     var x = 3;
     return sup;
 };
+
+printHello(x, 2*2);
+
+
+x;
+
+var y = 2*2 + 3/4;
+
+if (x > 3) {
+    return 6;
+    };

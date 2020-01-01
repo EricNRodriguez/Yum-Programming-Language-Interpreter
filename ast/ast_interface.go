@@ -2,17 +2,17 @@ package ast
 
 import "Yum-Programming-Language-Interpreter/token"
 
-type NodeInterface interface {
-	String() string            // string representation of expression
-	token.MetadataInterface       // literal and metadata
+type Node interface {
+	String() string         // string representation of expression
+	token.Metadata // literal and metadata
 }
 
-type StatementInterface interface {
-	NodeInterface
+type Statement interface {
+	Node
 	statementFunction()
 }
 
-type ExpressionInterface interface {
-	NodeInterface
+type Expression interface {
+	Node
 	expressionFunction()
 }

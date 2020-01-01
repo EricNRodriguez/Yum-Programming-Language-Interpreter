@@ -1,34 +1,34 @@
 package token
 
-type TokenInterface interface {
+type Token interface {
 	Type() TokenType
 	Literal() string
-	Metadata() MetadataInterface
-	MetadataInterface
+	Data() Metadata
+	Metadata
 }
 
-type Token struct {
+type token struct {
 	tokenType TokenType
 	literal   string
-	MetadataInterface
+	Metadata
 }
 
-func NewToken(tt TokenType, l string, lN int, fN string) *Token {
-	return &Token{
+func NewToken(tt TokenType, l string, lN int, fN string) *token {
+	return &token{
 		tokenType:         tt,
 		literal:           l,
-		MetadataInterface: NewMetatadata(lN, fN),
+		Metadata: NewMetatadata(lN, fN),
 	}
 }
 
-func (t *Token) Type() TokenType {
+func (t *token) Type() TokenType {
 	return t.tokenType
 }
 
-func (t *Token) Literal() string {
+func (t *token) Literal() string {
 	return t.literal
 }
 
-func (t *Token) Metadata() MetadataInterface {
-	return t.MetadataInterface
+func (t *token) Data() Metadata {
+	return t.Metadata
 }
