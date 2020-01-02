@@ -37,6 +37,8 @@ const (
 
 	// boolean operators
 	NEGATE TokenType = "!"
+	AND    TokenType = "&"
+	OR     TokenType = "|"
 
 	// general operators
 	ASSIGN TokenType = "="

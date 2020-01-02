@@ -15,9 +15,9 @@ type token struct {
 
 func NewToken(tt TokenType, l string, lN int, fN string) *token {
 	return &token{
-		tokenType:         tt,
-		literal:           l,
-		Metadata: NewMetatadata(lN, fN),
+		tokenType: tt,
+		literal:   l,
+		Metadata:  NewMetatadata(lN, fN),
 	}
 }
 

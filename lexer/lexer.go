@@ -9,12 +9,12 @@ import (
 	"os"
 )
 
-type LexerInterface interface {
+type Lexer interface {
 	NextToken() (token.Token, error)
 	Close() error
 }
 
-type Lexer struct {
+type lexer struct {
 	*bufio.Reader
 	io.Closer
 	currentLine       []byte
@@ -23,7 +23,7 @@ type Lexer struct {
 	fileName          string
 }
 
-func NewLexer(f *os.File) (l LexerInterface, err error) {
+func NewLexer(f *os.File) (l Lexer, err error) {
 	var (
 		r    *bufio.Reader
 		line []byte
@@ -36,7 +36,7 @@ func NewLexer(f *os.File) (l LexerInterface, err error) {
 		return
 	}
 
-	l = &Lexer{
+	l = &lexer{
 		Reader:            r,
 		Closer:            f,
 		currentLineNumber: 1,
@@ -49,17 +49,17 @@ func NewLexer(f *os.File) (l LexerInterface, err error) {
 
 }
 
-func (l *Lexer) readChars(n int) (chars []byte, err error) {
+func (l *lexer) readChars(n int) (chars []byte, err error) {
 	chars = make([]byte, n)
 	_, err = l.Reader.Read(chars)
 	return
 }
 
-func (l *Lexer) validVariableNameCharacter(b byte) bool {
+func (l *lexer) validVariableNameCharacter(b byte) bool {
 	return (b >= 65 && b <= 90) || (b >= 97 && b <= 122)
 }
 
-func (l *Lexer) readIdentifier() (idt []byte) {
+func (l *lexer) readIdentifier() (idt []byte) {
 	idt = make([]byte, 0)
 	// ascii characters
 	for l.currentLineIndex < len(l.currentLine) && l.validVariableNameCharacter(l.currentLine[l.currentLineIndex]) {
@@ -69,7 +69,7 @@ func (l *Lexer) readIdentifier() (idt []byte) {
 	return
 }
 
-func (l *Lexer) readNumber() (num []byte) {
+func (l *lexer) readNumber() (num []byte) {
 	num = make([]byte, 0)
 	// [0-9]
 	for l.currentLineIndex < len(l.currentLine) && l.currentLine[l.currentLineIndex] >= 48 &&
@@ -80,7 +80,7 @@ func (l *Lexer) readNumber() (num []byte) {
 	return
 }
 
-func (l *Lexer) trailingTerminal() (t token.TokenType, ok bool) {
+func (l *lexer) trailingTerminal() (t token.TokenType, ok bool) {
 	if l.currentLineIndex < len(l.currentLine) {
 		t = token.TokenType(l.currentLine[l.currentLineIndex])
 		ok = true
@@ -89,7 +89,7 @@ func (l *Lexer) trailingTerminal() (t token.TokenType, ok bool) {
 	return
 }
 
-func (l *Lexer) NextToken() (t token.Token, err error) {
+func (l *lexer) NextToken() (t token.Token, err error) {
 	var s = ""
 
 	// parsed the entire line
@@ -192,6 +192,10 @@ func (l *Lexer) NextToken() (t token.Token, err error) {
 		t = token.NewToken(token.LBRACKET, s, l.currentLineNumber, l.fileName)
 	case token.RBRACKET:
 		t = token.NewToken(token.RBRACKET, s, l.currentLineNumber, l.fileName)
+	case token.AND:
+		t = token.NewToken(token.AND, s, l.currentLineNumber, l.fileName)
+	case token.OR:
+		t = token.NewToken(token.OR, s, l.currentLineNumber, l.fileName)
 	case token.RETURN:
 		t = token.NewToken(token.RETURN, s, l.currentLineNumber, l.fileName)
 

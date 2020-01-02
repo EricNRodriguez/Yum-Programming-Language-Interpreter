@@ -7,103 +7,119 @@ import (
 	"strconv"
 )
 
-type prefix struct {
+type PrefixExpression struct {
 	token.Token
-	expression Expression
+	Expression Expression
 }
 
-func NewPrefixExpression(t token.Token, e Expression) Expression {
-	return &prefix{
-		Token: t,
-		expression:     e,
+func NewPrefixExpression(t token.Token, e Expression) *PrefixExpression {
+	return &PrefixExpression{
+		Token:      t,
+		Expression: e,
 	}
 }
 
-func (p *prefix) String() string {
-	return fmt.Sprintf("(%v%v)", p.Literal(), p.expression.String())
+func (p *PrefixExpression) String() string {
+	return fmt.Sprintf("(%v%v)", p.Literal(), p.Expression.String())
 }
 
-func (p *prefix) expressionFunction() {}
+func (p *PrefixExpression) Type() NodeType {
+	return PREFIX_EXPRESSION
+}
 
-type infix struct {
+func (p *PrefixExpression) expressionFunction() {}
+
+type InfixExpression struct {
 	token.Token
-	leftExpression  Expression
-	rightExpression Expression
+	LeftExpression  Expression
+	RightExpression Expression
 }
 
 func NewInfixExpression(t token.Token, le, re Expression) Expression {
-	return &infix{
-		Token:  t,
-		leftExpression:  le,
-		rightExpression: re,
+	return &InfixExpression{
+		Token:           t,
+		LeftExpression:  le,
+		RightExpression: re,
 	}
 }
 
-func (i *infix) String() string {
-	return fmt.Sprintf("(%v %v %v)", i.leftExpression.String(), i.Token.Literal(), i.rightExpression.String())
+func (i *InfixExpression) String() string {
+	return fmt.Sprintf("(%v %v %v)", i.LeftExpression.String(), i.Token.Literal(), i.RightExpression.String())
 }
 
-func (i *infix) expressionFunction() {}
+func (i *InfixExpression) Type() NodeType {
+	return INFIX_EXPRESSION
+}
 
-type integerExpression struct {
+func (i *InfixExpression) expressionFunction() {}
+
+type IntegerExpression struct {
 	token.Metadata
-	value int
+	Value int
 }
 
-func NewIntegerExpression(t token.Token, i int) Expression {
-	return &integerExpression{
+func NewIntegerExpression(t token.Token, i int) *IntegerExpression {
+	return &IntegerExpression{
 		Metadata: t.Data(),
-		value:             i,
+		Value:    i,
 	}
 }
 
-func (ie *integerExpression) String() string {
-	return strconv.Itoa(ie.value)
+func (ie *IntegerExpression) String() string {
+	return strconv.Itoa(ie.Value)
 }
 
-func (te *integerExpression) expressionFunction() {}
+func (ie *IntegerExpression) Type() NodeType {
+	return INTEGER_EXPRESSION
+}
 
-type booleanExpression struct {
+func (ie *IntegerExpression) expressionFunction() {}
+
+type BooleanExpression struct {
 	token.Metadata
 	Value bool
 }
 
-func NewBooleanExpression(t token.Token, v bool) Expression {
-	return &booleanExpression{
+func NewBooleanExpression(t token.Token, v bool) *BooleanExpression {
+	return &BooleanExpression{
 		Metadata: t.Data(),
-		Value:             v,
+		Value:    v,
 	}
 }
 
-func (be *booleanExpression) String() string {
+func (be *BooleanExpression) String() string {
 	if be.Value {
 		return "true"
 	}
 	return "false"
 }
 
-func (be *booleanExpression) expressionFunction() {}
+func (be *BooleanExpression) Type() NodeType {
+	return BOOLEAN_EXPRESSION
+}
 
-type functionCallExpression struct {
+func (be *BooleanExpression) expressionFunction() {}
+
+type FunctionCallExpression struct {
 	token.Metadata
 	FunctionName string
 	Parameters   []Expression
 }
 
 func NewFunctionCallExpression(md token.Metadata, fName string, params ...Expression) Expression {
-	return &functionCallExpression{
-		Metadata: md,
-		FunctionName:      fName,
-		Parameters:        params,
+	return &FunctionCallExpression{
+		Metadata:     md,
+		FunctionName: fName,
+		Parameters:   params,
 	}
 }
 
-func (fc *functionCallExpression) String() string {
+func (fc *FunctionCallExpression) String() string {
 	pBuff := bytes.Buffer{}
 	if fc.Parameters != nil {
 		for i, param := range fc.Parameters {
 			pBuff.WriteString(param.String())
-			if i != len(fc.Parameters) -1 {
+			if i != len(fc.Parameters)-1 {
 				pBuff.WriteString(", ")
 			}
 		}
@@ -112,16 +128,24 @@ func (fc *functionCallExpression) String() string {
 	return fmt.Sprintf("%v(%v)", fc.FunctionName, pBuff.String())
 }
 
-func (fc *functionCallExpression) expressionFunction() {}
+func (fc *FunctionCallExpression) Type() NodeType {
+	return FUNC_CALL_EXPRESSION
+}
 
-type identifierExpression struct {
-	*Identifier
+func (fc *FunctionCallExpression) expressionFunction() {}
+
+type IdentifierExpression struct {
+	Node
 }
 
 func NewIdentifierExpression(t token.Token) Expression {
-	return &identifierExpression{
-		Identifier: NewIdentifier(t),
+	return &IdentifierExpression{
+		Node: NewIdentifier(t),
 	}
 }
 
-func (i *identifierExpression) expressionFunction() {}
+func (i *IdentifierExpression) Type() NodeType {
+	return IDENTIFIER_EXPRESSION
+}
+
+func (i *IdentifierExpression) expressionFunction() {}

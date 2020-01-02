@@ -1,22 +1,25 @@
 package ast
 
-import "Yum-Programming-Language-Interpreter/token"
+import (
+	"Yum-Programming-Language-Interpreter/token"
+)
 
 type Identifier struct {
 	token.Metadata
-	name string
+	Name string
 }
 
 func NewIdentifier(t token.Token) *Identifier {
 	return &Identifier{
 		Metadata: t.Data(),
-		name: t.Literal(),
+		Name:     t.Literal(),
 	}
 }
 
 func (i *Identifier) String() string {
-	return i.name
+	return i.Name
 }
 
-
-
+func (i *Identifier) Type() NodeType {
+	return IDENTIFIER
+}

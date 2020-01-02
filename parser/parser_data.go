@@ -26,22 +26,23 @@ type parserData struct {
 	syntaxErrors []error
 }
 
-func newParserData(l lexer.LexerInterface) (pd *parserData, err error) {
+func newParserData(l lexer.Lexer) (parserDataInterface, error) {
 	var (
-		cT token.Token
+		cT  token.Token
+		err error
 	)
 
 	if cT, err = l.NextToken(); err != nil {
 		err = errors.New(fmt.Sprintf("unable to initalise parser, failed to read token | %s", err.Error()))
-		return
+		return nil, err
 
 	} else if cT.Type() == token.EOF {
 		err = errors.New("unable to parse program with no content | EOF detected at start of program")
-		return
+		return nil, err
 
 	}
 
-	pd = &parserData{
+	pd := &parserData{
 		tokBuf:       make([]token.Token, 0),
 		currTok:      cT,
 		syntaxErrors: make([]error, 0),
@@ -52,7 +53,7 @@ func newParserData(l lexer.LexerInterface) (pd *parserData, err error) {
 		pd.addToken(cT)
 	}
 
-	return
+	return pd, err
 }
 
 func (pd *parserData) addToken(t token.Token) {

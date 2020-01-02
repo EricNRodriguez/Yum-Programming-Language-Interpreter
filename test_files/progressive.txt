@@ -1,16 +1,19 @@
-
-func printHello(sup, z) {
-    var x = 3;
-    return sup;
-};
-
-printHello(x, 2*2);
-
-
+var x = 2;
 x;
 
-var y = 2*2 + 3/4;
+if (x > 52) {
+    var x = 100;
+} else {
+    var x = -100;
+};
 
-if (x > 3) {
-    return 6;
-    };
+var y = x + 3;
+y;
+
+func hello(x, y, z) {
+    var x = x + 200;
+    return x & y + z;
+};
+
+var z = hello(-200,2,2);
+z;

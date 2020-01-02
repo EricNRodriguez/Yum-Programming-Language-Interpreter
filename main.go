@@ -1,6 +1,7 @@
 package main
 
 import (
+	"Yum-Programming-Language-Interpreter/eval"
 	"Yum-Programming-Language-Interpreter/lexer"
 	"Yum-Programming-Language-Interpreter/parser"
 	"fmt"
@@ -9,7 +10,7 @@ import (
 
 func main() {
 	var (
-		l lexer.LexerInterface
+		l lexer.Lexer
 	)
 	f, _ := os.Open("test_files/progressive.txt")
 	l, _ = lexer.NewLexer(f)
@@ -22,4 +23,9 @@ func main() {
 	}
 	prog := p.Parse()
 	fmt.Println(prog.String())
+	fmt.Println("----")
+	fmt.Println(eval.Evaluate(prog).Literal())
+
+
 }
+

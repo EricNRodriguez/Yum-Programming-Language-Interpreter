@@ -10,16 +10,10 @@ type Program struct {
 	Statements []Statement
 }
 
-func NewProgram(m token.Metadata, s ...Statement) *Program {
+func NewProgram(m token.Metadata, s ...Statement) Node {
 	return &Program{
-		Metadata: m,
-		Statements:        s,
-	}
-}
-
-func (p *Program) AddStatement(s Statement) {
-	if s != nil {
-		p.Statements = append(p.Statements, s)
+		Metadata:   m,
+		Statements: s,
 	}
 }
 
@@ -31,4 +25,8 @@ func (p *Program) String() string {
 	}
 
 	return lBuff.String()
+}
+
+func (p *Program) Type() NodeType {
+	return PROGRAM
 }

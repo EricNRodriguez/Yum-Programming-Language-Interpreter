@@ -9,26 +9,30 @@ import (
 	"strconv"
 )
 
-type nudMethod func() ast.Expression                        // prefix
+type nudMethod func() ast.Expression                          // prefix
 type ledMethod func(expression ast.Expression) ast.Expression //infix
 
 type operatorPrecedence int
 
 const (
 	MINPRECEDENCE operatorPrecedence = iota
-	EQUALS                           // ==
-	CONDITIONAL                      // >=, >, <=, <
-	SUMSUB                           // + -
-	PRODDIV                          // * /
-	EXPONENT                         // ^ (NOT IMPLEMENTED)
-	PREFIX                           // -x !x
-	POSTFIX                          // x++ (NOT IMPLEMENTED)
-	CALL                             // fn(a,b)
+	OR
+	AND
+	EQUALS      // ==
+	CONDITIONAL // >=, >, <=, <
+	SUMSUB      // + -
+	PRODDIV     // * /
+	EXPONENT    // ^ (NOT IMPLEMENTED)
+	PREFIX      // -x !x
+	POSTFIX     // x++ (NOT IMPLEMENTED)
+	CALL        // fn(a,b)
 
 )
 
 var (
 	tokenOperPrecedence = map[token.TokenType]operatorPrecedence{
+		token.OR:      OR,
+		token.AND:     AND,
 		token.ADD:     SUMSUB,
 		token.SUB:     SUMSUB,
 		token.MULT:    PRODDIV,
@@ -54,18 +58,19 @@ type prattParser struct {
 	parserDataInterface
 }
 
-func newPrattParser(l lexer.LexerInterface) (pp *prattParser, err error) {
+func newPrattParser(l lexer.Lexer) (prattParserInterface, error) {
 	var (
 		nMs = make(map[token.TokenType]nudMethod)
 		lMs = make(map[token.TokenType]ledMethod)
 		pd  parserDataInterface
+		err error
 	)
 
 	if pd, err = newParserData(l); err != nil {
-		return
+		return nil, err
 	}
 
-	pp = &prattParser{
+	pp := &prattParser{
 		nudMethods:          nMs,
 		ledMethods:          lMs,
 		parserDataInterface: pd,
@@ -91,8 +96,10 @@ func newPrattParser(l lexer.LexerInterface) (pp *prattParser, err error) {
 	lMs[token.LTEQUAL] = pp.parseInfixOperator
 	lMs[token.EQUAL] = pp.parseInfixOperator
 	lMs[token.NEQUAL] = pp.parseInfixOperator
+	lMs[token.AND] = pp.parseInfixOperator
+	lMs[token.OR] = pp.parseInfixOperator
 
-	return
+	return pp, err
 }
 
 func (pp *prattParser) parseExpression(precedence operatorPrecedence) (leftExpr ast.Expression) {
