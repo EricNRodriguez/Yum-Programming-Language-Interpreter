@@ -82,25 +82,25 @@ func (r *ReturnValue) Literal() string {
 	return r.Value.Literal()
 }
 
-type Function struct {
-	Name string
+type UserFunction struct {
+	Name       string
 	Parameters []string
-	Body []ast.Statement
+	Body       []ast.Statement
 }
 
-func NewFunction(n string, params []string, body []ast.Statement) *Function {
-	return &Function{
-		Name: n,
+func NewUserFunction(n string, params []string, body []ast.Statement) *UserFunction {
+	return &UserFunction{
+		Name:       n,
 		Parameters: params,
-		Body: body,
+		Body:       body,
 	}
 }
 
-func (f *Function) Type() ObjectType {
-	return FUNCTION
+func (f *UserFunction) Type() ObjectType {
+	return USER_FUNCTION
 }
 
-func (f *Function) Literal() string {
+func (f *UserFunction) Literal() string {
 	sBuff := bytes.Buffer{}
 	sBuff.WriteString(fmt.Sprintf("func %v(%v) {", f.Name, strings.Join(f.Parameters, ", ")))
 	for _, s := range f.Body {
@@ -108,4 +108,24 @@ func (f *Function) Literal() string {
 	}
 	sBuff.WriteString("};")
 	return sBuff.String()
+}
+
+type NativeFunction struct {
+	Name     string
+	Function func(args ...Object) Object
+}
+
+func NewNativeFunction(n string, f func(args ...Object) Object) *NativeFunction {
+	return &NativeFunction{
+		Name:     n,
+		Function: f,
+	}
+}
+
+func (nf *NativeFunction) Type() ObjectType {
+	return NATIVE_FUNCTION
+}
+
+func (nf *NativeFunction) Literal() string {
+	return fmt.Sprintf("%v", *nf)
 }

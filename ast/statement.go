@@ -7,35 +7,53 @@ import (
 )
 
 type VarStatement struct {
-	token.Token
-	Identifier token.Token
-	Expression Expression
+	*AssignmentStatement
 }
 
-func NewVarStatement(t, i token.Token, e Expression) Statement {
+func NewVarStatement(md token.Metadata, i *Identifier, e Expression) *VarStatement {
 	return &VarStatement{
-		Token:      t,
-		Identifier: i,
-		Expression: e,
+		AssignmentStatement: NewAssignmentStatement(md, i, e),
 	}
 }
 
 func (v *VarStatement) String() string {
-	return fmt.Sprintf("var %v = %v;", v.Identifier.Literal(), v.Expression.String())
+	return fmt.Sprintf("var %v", v.AssignmentStatement.String())
 }
 
 func (v *VarStatement) Type() NodeType {
 	return VAR_STATEMENT
 }
 
-func (v *VarStatement) statementFunction() {}
+type AssignmentStatement struct {
+	token.Metadata
+	Identifier *Identifier
+	Expression Expression
+}
+
+func NewAssignmentStatement(md token.Metadata, i *Identifier, e Expression) *AssignmentStatement {
+	return &AssignmentStatement{
+		Metadata:   md,
+		Identifier: i,
+		Expression: e,
+	}
+}
+
+func (as *AssignmentStatement) String() string {
+	return fmt.Sprintf("var %v = %v;", as.Identifier.String(), as.Expression.String())
+}
+
+func (as *AssignmentStatement) Type() NodeType {
+	return ASSIGNMENT_STATEMENT
+}
+
+func (as *AssignmentStatement) statementFunction() {}
 
 type ReturnStatement struct {
 	token.Token
 	Expression Expression
 }
 
-func NewReturnStatment(t token.Token, e Expression) Statement {
+func NewReturnStatment(t token.Token, e Expression) *ReturnStatement {
 	return &ReturnStatement{
 		Token:      t,
 		Expression: e,

@@ -1,1 +1,3 @@
-- implement a robust error implementation
+- robust error implementation + stack trace
+- semantic analysis
+

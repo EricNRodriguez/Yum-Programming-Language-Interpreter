@@ -23,6 +23,7 @@ func init() {
 		ast.EXPRESSION_STATEMENT:           evaluateExpressionStatement,
 		ast.IF_STATEMENT:                   evaluateIfStatement,
 		ast.FUNCTION_DECLARATION_STATEMENT: evaluateFunctionDeclarationStatement,
+		ast.ASSIGNMENT_STATEMENT:           evaluateAssignmentStatement,
 	}
 }
 
@@ -159,31 +160,56 @@ func evaluateBooleanExpression(node ast.Node) object.Object {
 	return o
 }
 
-func evaluateFunctionCallExpression(node ast.Node) object.Object {
+func evaluateFunctionCallExpression(node ast.Node) (o object.Object) {
 	fCall := node.(*ast.FunctionCallExpression)
-	f, _ := sT.GetFunc(fCall.FunctionName)
+	if f, ok := sT.GetUserFunc(fCall.FunctionName); !ok {
+		// native function call
 
-	// evaluate parameters
-	paramValues := map[string]object.Object{}
-	for i := range fCall.Parameters {
-		paramValues[f.Parameters[i]] = Evaluate(fCall.Parameters[i])
+		// evaluate parameters
+		evalParams := make([]object.Object, len(fCall.Parameters))
+		for i, e := range fCall.Parameters {
+			evalParams[i] = Evaluate(e)
+		}
+
+		f, _ := sT.GetNativeFunc(fCall.FunctionName)
+		o = f.Function(evalParams...)
+
+	} else {
+		// user defined function
+
+		// evaluate parameters
+		paramValues := map[string]object.Object{}
+		for i := range fCall.Parameters {
+			paramValues[f.Parameters[i]] = Evaluate(fCall.Parameters[i])
+		}
+
+		// execute function call
+		sT.EnterScope()
+		defer sT.ExitScope()
+
+		for k, v := range paramValues {
+			sT.SetVar(k, v)
+		}
+
+		o := evaluateBlockStatement(f.Body...)
+		if o.Type() != object.RETURN {
+			o = object.NewNull()
+		}
 	}
-
-	// execute function call
-	sT.EnterScope()
-	defer sT.ExitScope()
-
-	for k, v := range paramValues {
-		sT.SetVar(k, v)
-	}
-
-	return evaluateBlockStatement(f.Body...)
+	return o
 }
 
 func evaluateVarStatement(node ast.Node) object.Object {
 	vStmt := node.(*ast.VarStatement)
 	leftObj := Evaluate(vStmt.Expression)
-	sT.SetVar(vStmt.Identifier.Literal(), leftObj)
+	sT.SetVar(vStmt.Identifier.String(), leftObj)
+	return object.NewNull()
+}
+
+func evaluateAssignmentStatement(node ast.Node) object.Object {
+	vStmt := node.(*ast.AssignmentStatement)
+	leftObj := Evaluate(vStmt.Expression)
+	sT.UpdateVar(vStmt.Identifier.String(), leftObj)
 	return object.NewNull()
 }
 
@@ -238,8 +264,7 @@ func evaluateFunctionDeclarationStatement(node ast.Node) object.Object {
 	for i, n := range fDec.Parameters {
 		paramNames[i] = n.Name
 	}
-	o := object.NewFunction(fDec.Name, paramNames, fDec.Body)
-	sT.SetFunc(*o)
+	o := object.NewUserFunction(fDec.Name, paramNames, fDec.Body)
+	sT.SetUserFunc(*o)
 	return object.NewNull()
 }
-

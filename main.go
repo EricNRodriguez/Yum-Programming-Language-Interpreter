@@ -24,8 +24,6 @@ func main() {
 	prog := p.Parse()
 	fmt.Println(prog.String())
 	fmt.Println("----")
-	fmt.Println(eval.Evaluate(prog).Literal())
-
+	eval.Evaluate(prog)
 
 }
-

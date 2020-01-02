@@ -1,19 +1,16 @@
 var x = 2;
-x;
+var y = 25;
 
-if (x > 52) {
-    var x = 100;
-} else {
-    var x = -100;
-};
+if (y < 12) {
+    x = 22;
+    var y = true;
 
-var y = x + 3;
+}:
+
 y;
 
-func hello(x, y, z) {
-    var x = x + 200;
-    return x & y + z;
+func getshut(x) {
+return x;
 };
 
-var z = hello(-200,2,2);
-z;
+print(22);

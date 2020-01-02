@@ -34,7 +34,7 @@ func NewRecursiveDescentParser(l lexer.Lexer) (Parser, error) {
 	// initialise pMR
 	pMR[token.VAR] = rdp.parseVarStatement
 	pMR[token.RETURN] = rdp.parseReturnStatement
-	pMR[token.IDEN] = rdp.parseExpressionStatement
+	pMR[token.IDEN] = rdp.parseIdenStatement
 	pMR[token.INT] = rdp.parseExpressionStatement
 	pMR[token.BOOLEAN] = rdp.parseExpressionStatement
 	pMR[token.IF] = rdp.parseIfStatement
@@ -42,9 +42,6 @@ func NewRecursiveDescentParser(l lexer.Lexer) (Parser, error) {
 	pMR[token.NEGATE] = rdp.parseExpressionStatement
 	pMR[token.SUB] = rdp.parseExpressionStatement
 	pMR[token.ADD] = rdp.parseExpressionStatement
-
-
-
 
 	return rdp, err
 }
@@ -94,7 +91,7 @@ func (rdp *RecursiveDescentParser) parseStatement() (stmt ast.Statement, err err
 
 func (rdp *RecursiveDescentParser) parseVarStatement() (stmt ast.Statement) {
 	var (
-		iden     token.Token
+		iden     *ast.Identifier
 		varToken = rdp.currentToken()
 	)
 
@@ -104,7 +101,7 @@ func (rdp *RecursiveDescentParser) parseVarStatement() (stmt ast.Statement) {
 	}
 	rdp.consume(1) // consume var
 
-	iden = rdp.currentToken()
+	iden = ast.NewIdentifier(rdp.currentToken())
 
 	if !rdp.expectTokenType(token.ASSIGN) {
 		rdp.progressToNextSemicolon()
@@ -114,7 +111,7 @@ func (rdp *RecursiveDescentParser) parseVarStatement() (stmt ast.Statement) {
 
 	// skip stmts with syntax errors
 	if expr := rdp.parseExpression(MINPRECEDENCE); expr != nil {
-		stmt = ast.NewVarStatement(varToken, iden, expr)
+		stmt = ast.NewVarStatement(varToken.Data(), iden, expr)
 	}
 
 	return
@@ -128,6 +125,25 @@ func (rdp *RecursiveDescentParser) parseReturnStatement() (stmt ast.Statement) {
 	rdp.consume(1) // consume return
 	expr := rdp.parseExpression(MINPRECEDENCE)
 	stmt = ast.NewReturnStatment(retToken, expr)
+	return
+}
+
+func (rdp *RecursiveDescentParser) parseIdenStatement() (stmt ast.Statement) {
+	if rdp.peekToken().Type() == token.ASSIGN {
+		iden := ast.NewIdentifier(rdp.currentToken())
+
+		if !rdp.expectTokenType(token.ASSIGN) {
+			rdp.progressToNextSemicolon()
+			return
+		}
+		rdp.consume(2) // consume identifier and assign
+		if expr := rdp.parseExpression(MINPRECEDENCE); expr != nil {
+			stmt = ast.NewAssignmentStatement(iden.Metadata, iden, expr)
+		}
+
+	} else {
+		stmt = rdp.parseExpressionStatement()
+	}
 	return
 }
 
