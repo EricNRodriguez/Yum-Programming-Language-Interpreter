@@ -39,7 +39,7 @@ func NewAssignmentStatement(md token.Metadata, i *Identifier, e Expression) *Ass
 }
 
 func (as *AssignmentStatement) String() string {
-	return fmt.Sprintf("var %v = %v;", as.Identifier.String(), as.Expression.String())
+	return fmt.Sprintf(" %v = %v;", as.Identifier.String(), as.Expression.String())
 }
 
 func (as *AssignmentStatement) Type() NodeType {

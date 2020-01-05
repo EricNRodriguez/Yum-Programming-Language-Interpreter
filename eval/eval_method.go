@@ -86,10 +86,10 @@ func evaluatePrefixExpression(node ast.Node) (o object.Object) {
 
 func evaluateInfixExpression(node ast.Node) (o object.Object) {
 	iExpr := node.(*ast.InfixExpression)
-	lObj := Evaluate(iExpr.LeftExpression)
-	rObj := Evaluate(iExpr.RightExpression)
+	lObj := unpack(Evaluate(iExpr.LeftExpression))
+	rObj := unpack(Evaluate(iExpr.RightExpression))
 
-	if lObj.Type() == rObj.Type() {
+	if lObj.Type() == rObj.Type(){
 		if lObj.Type() == object.INTEGER {
 			lObj := lObj.(*object.Integer)
 			rObj := rObj.(*object.Integer)
@@ -148,6 +148,14 @@ func evaluateInfixExpression(node ast.Node) (o object.Object) {
 	return
 }
 
+func unpack(o object.Object) object.Object {
+	if o.Type() != object.RETURN {
+		return o
+	}
+	oV := o.(*object.ReturnValue).Value
+	return unpack(oV)
+}
+
 func evaluateIntegerExpression(node ast.Node) object.Object {
 	i := node.(*ast.IntegerExpression)
 	o := object.NewInteger(i.Value)
@@ -191,10 +199,11 @@ func evaluateFunctionCallExpression(node ast.Node) (o object.Object) {
 			sT.SetVar(k, v)
 		}
 
-		o := evaluateBlockStatement(f.Body...)
+		o = evaluateBlockStatement(f.Body...)
 		if o.Type() != object.RETURN {
 			o = object.NewNull()
 		}
+
 	}
 	return o
 }

@@ -5,7 +5,10 @@ import (
 	"Yum-Programming-Language-Interpreter/object"
 )
 
-var sT = NewSymbolTable()
+var (
+	sT = NewSymbolTable()
+	stackTrace = make([]ast.FunctionCallExpression, 0)
+)
 
 func Evaluate(node ast.Node) object.Object {
 	if method, ok := evalMethodRouter[node.Type()]; ok {

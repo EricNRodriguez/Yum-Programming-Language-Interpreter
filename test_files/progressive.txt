@@ -1,16 +1,14 @@
 var x = 2;
-var y = 25;
 
-if (y < 12) {
-    x = 22;
-    var y = true;
+func shitStank(z) {
 
-}:
-
-y;
-
-func getshut(x) {
-return x;
+    return hello(z) + 23;
 };
 
-print(22);
+func hello(y) {
+  return y;
+};
+
+print(111111111111111);
+
+print(shitStank(x) + 3);

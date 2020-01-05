@@ -21,7 +21,7 @@ func (p *Program) String() string {
 	lBuff := bytes.Buffer{}
 	for _, s := range p.Statements {
 		lBuff.WriteString(s.String())
-		lBuff.WriteString(" ")
+		lBuff.WriteString("\n")
 	}
 
 	return lBuff.String()
