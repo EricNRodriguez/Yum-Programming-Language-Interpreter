@@ -12,9 +12,9 @@ type SymbolTable interface {
 	DelVar(string)
 	GetVar(string) (object.Object, bool)
 	SetUserFunc(object.UserFunction)
-	GetNativeFunc(string) object.NativeFunction
+	GetNativeFunc(string) (*object.NativeFunction, bool)
 	DelUserFunc(string)
-	GetUserFunc(string) (*object.UserFunction, bool)
+	GetUserFunc(string) (object.UserFunction, bool)
 }
 
 type symbolTable struct {

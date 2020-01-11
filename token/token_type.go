@@ -1,24 +1,11 @@
 package token
 
-import (
-	"errors"
-	"fmt"
-)
-
 type TokenType string
-
-func (tt TokenType) AssertEqual(ttTwo TokenType) (err error) {
-	if tt != ttTwo {
-		err = errors.New(fmt.Sprintf(" %v != %v", tt, ttTwo))
-	}
-	return
-}
 
 const (
 	EOF     TokenType = "EOF"
 	ILLEGAL TokenType = "ILLEGAL"
 
-	IDEN   TokenType = "IDEN"
 	FUNC   TokenType = "FUNC"
 	VAR    TokenType = "VAR"
 	IF     TokenType = "IF"
@@ -58,7 +45,7 @@ const (
 	LBRACKET TokenType = "["
 	RBRACKET TokenType = "]"
 
-	INT TokenType = "INT"
-
+	IDEN    TokenType = "IDEN"
+	INT     TokenType = "INT"
 	BOOLEAN TokenType = "BOOL"
 )

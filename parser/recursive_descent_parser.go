@@ -2,9 +2,9 @@ package parser
 
 import (
 	"Yum-Programming-Language-Interpreter/ast"
+	"Yum-Programming-Language-Interpreter/internal"
 	"Yum-Programming-Language-Interpreter/lexer"
 	"Yum-Programming-Language-Interpreter/token"
-	"errors"
 	"fmt"
 )
 
@@ -35,7 +35,7 @@ func NewRecursiveDescentParser(l lexer.Lexer) (Parser, error) {
 	pMR[token.VAR] = rdp.parseVarStatement
 	pMR[token.RETURN] = rdp.parseReturnStatement
 	pMR[token.IDEN] = rdp.parseIdenStatement
-	pMR[token.INT] = rdp.parseExpressionStatement
+	//pMR[token.INT] = rdp.parseExpressionStatement
 	pMR[token.BOOLEAN] = rdp.parseExpressionStatement
 	pMR[token.IF] = rdp.parseIfStatement
 	pMR[token.FUNC] = rdp.parseFuncDeclarationStatement
@@ -56,6 +56,7 @@ func (rdp *RecursiveDescentParser) Parse() (prog ast.Node) {
 			rdp.progressToNextSemicolon()
 
 		} else {
+
 			if stmt != nil {
 				stmts = append(stmts, stmt)
 			}
@@ -68,7 +69,7 @@ func (rdp *RecursiveDescentParser) Parse() (prog ast.Node) {
 
 	// print all errors - dev purposes only
 	for _, e := range rdp.errors() {
-		fmt.Println("ERROR : ", e.Error())
+		fmt.Println(e.Error())
 	}
 
 	return prog
@@ -76,14 +77,14 @@ func (rdp *RecursiveDescentParser) Parse() (prog ast.Node) {
 
 func (rdp *RecursiveDescentParser) parseStatement() (stmt ast.Statement, err error) {
 	if parser, ok := rdp.parseMethodRouter[rdp.currentToken().Type()]; !ok {
-		err = errors.New(fmt.Sprintf("unable to parse statement beginning on line %v | no parse statement for "+
-			"token type %v", rdp.currentToken().LineNumber(), rdp.currentToken().Type()))
+		errMsg := fmt.Sprintf(internal.ErrInvalidStatement, rdp.currentToken().Literal())
+		rdp.recordError(internal.NewError(rdp.currentToken().Data(), errMsg, internal.SyntaxErr))
+		rdp.progressToNextSemicolon()
 	} else {
-		cT := rdp.currentToken()
 		stmt = parser()
-		if err := rdp.currentToken().Type().AssertEqual(token.SEMICOLON); err != nil {
-			err = errors.New(fmt.Sprintf("missing semicolon in statement beginning on line %v | %v",
-				cT.LineNumber(), err))
+		if rdp.currentToken().Type() != token.SEMICOLON {
+			errMsg := fmt.Sprintf(internal.ERR_INVALID_TOKEN, ";", rdp.currentToken().Literal())
+			return nil, internal.NewError(rdp.currentToken().Data(), errMsg, internal.SyntaxErr)
 		}
 	}
 	return
@@ -107,15 +108,16 @@ func (rdp *RecursiveDescentParser) parseVarStatement() (stmt ast.Statement) {
 		rdp.progressToNextSemicolon()
 		return
 	}
-	rdp.consume(2) // consume identifier and assign
+	rdp.consume(2)
 
 	// skip stmts with syntax errors
 	if expr := rdp.parseExpression(MINPRECEDENCE); expr != nil {
-		stmt = ast.NewVarStatement(varToken.Data(), iden, expr)
+		stmt = ast.NewVarStatement(varToken, iden, expr)
 	}
-
 	return
 }
+
+
 
 func (rdp *RecursiveDescentParser) parseReturnStatement() (stmt ast.Statement) {
 	var (
@@ -123,8 +125,11 @@ func (rdp *RecursiveDescentParser) parseReturnStatement() (stmt ast.Statement) {
 	)
 
 	rdp.consume(1) // consume return
-	expr := rdp.parseExpression(MINPRECEDENCE)
-	stmt = ast.NewReturnStatment(retToken, expr)
+	if expr := rdp.parseExpression(MINPRECEDENCE); expr != nil {
+		stmt = ast.NewReturnStatment(retToken, expr)
+
+	}
+
 	return
 }
 
@@ -137,6 +142,7 @@ func (rdp *RecursiveDescentParser) parseIdenStatement() (stmt ast.Statement) {
 			return
 		}
 		rdp.consume(2) // consume identifier and assign
+
 		if expr := rdp.parseExpression(MINPRECEDENCE); expr != nil {
 			stmt = ast.NewAssignmentStatement(iden.Metadata, iden, expr)
 		}
@@ -148,8 +154,7 @@ func (rdp *RecursiveDescentParser) parseIdenStatement() (stmt ast.Statement) {
 }
 
 func (rdp *RecursiveDescentParser) parseExpressionStatement() (stmt ast.Statement) {
-	expr := rdp.parseExpression(MINPRECEDENCE)
-	stmt = ast.NewExpressionStatment(expr)
+	stmt = ast.NewExpressionStatment(rdp.parseExpression(MINPRECEDENCE))
 	return
 }
 
@@ -162,15 +167,17 @@ func (rdp *RecursiveDescentParser) parseIfStatement() (stmt ast.Statement) {
 	)
 
 	if !rdp.expectTokenType(token.LPAREN) {
+		//rdp.consumeCurrentStatement()
 		rdp.consumeIfStatement()
 		return
 	}
-	rdp.consume(1)
+	rdp.consume(1) // consume left paren
 
 	if condition = rdp.parseExpression(MINPRECEDENCE); condition == nil {
 		rdp.consumeIfStatement()
 		return
 	}
+
 
 	trueBlock = rdp.parseBlockStatement()
 
@@ -186,12 +193,13 @@ func (rdp *RecursiveDescentParser) parseIfStatement() (stmt ast.Statement) {
 
 func (rdp *RecursiveDescentParser) parseBlockStatement() (bStmt []ast.Statement) {
 	bStmt = make([]ast.Statement, 0)
-	if err := rdp.currentToken().Type().AssertEqual(token.LBRACE); err != nil {
-		rdp.recordError(err)
+	if rdp.currentToken().Type() != token.LBRACE {
+		errMsg := fmt.Sprintf(internal.ERR_INVALID_TOKEN, token.LBRACE, rdp.currentToken().Literal())
+		rdp.recordError(internal.NewError(rdp.currentToken().Data(), errMsg, internal.SyntaxErr))
 		rdp.consumeIfStatement()
 		return
-	}
 
+	}
 	rdp.consume(1)
 
 	for rdp.currentToken().Type() != token.RBRACE && rdp.currentToken().Type() != token.EOF {
@@ -204,9 +212,11 @@ func (rdp *RecursiveDescentParser) parseBlockStatement() (bStmt []ast.Statement)
 		rdp.consume(1)
 	}
 
-	if err := rdp.currentToken().Type().AssertEqual(token.RBRACE); err != nil {
-		rdp.recordError(err)
-		rdp.consumeBlockStatement()
+	if rdp.currentToken().Type() != token.RBRACE {
+		errMsg := fmt.Sprintf(internal.ERR_INVALID_TOKEN, token.RBRACE, rdp.currentToken().Literal())
+		rdp.recordError(internal.NewError(rdp.currentToken().Data(), errMsg, internal.SyntaxErr))
+		return
+
 	}
 
 	// consume right brace
@@ -220,7 +230,6 @@ func (rdp *RecursiveDescentParser) parseFuncDeclarationStatement() (stmt ast.Sta
 		iden   string
 		params = make([]ast.Identifier, 0)
 		body   []ast.Statement
-		err    error
 	)
 
 	if !rdp.expectTokenType(token.IDEN) {
@@ -237,32 +246,34 @@ func (rdp *RecursiveDescentParser) parseFuncDeclarationStatement() (stmt ast.Sta
 	}
 
 	rdp.consume(2) // consume function name and left paren
+	if rdp.currentToken().Type() != token.RPAREN {
+		for {
 
-	for {
-		if err = rdp.currentToken().Type().AssertEqual(token.IDEN); err != nil {
-			err = errors.New(fmt.Sprintf("invalid function declaration on line %v | %v",
-				rdp.currentToken().LineNumber(), err))
-			rdp.recordError(err)
-			rdp.consumeBlockStatement()
-			return
+			if rdp.currentToken().Type() != token.IDEN {
+				errMsg := fmt.Sprintf(internal.ERR_INVALID_TOKEN, token.IDEN, rdp.currentToken().Literal())
+				rdp.recordError(internal.NewError(rdp.currentToken().Data(), errMsg, internal.SyntaxErr))
+				rdp.consumeBlockStatement()
+				return
+
+			}
+
+			params = append(params, *ast.NewIdentifier(rdp.currentToken()))
+			rdp.consume(1) // consume ident
+
+			if rdp.currentToken().Type() == token.RPAREN {
+				break
+			}
+
+			if rdp.currentToken().Type() != token.COMMA {
+				errMsg := fmt.Sprintf(internal.ERR_INVALID_TOKEN, token.COMMA, rdp.currentToken().Literal())
+				rdp.recordError(internal.NewError(rdp.currentToken().Data(), errMsg, internal.SyntaxErr))
+				rdp.consumeBlockStatement()
+				return
+
+			}
+			rdp.consume(1) // consume comma
+
 		}
-
-		params = append(params, *ast.NewIdentifier(rdp.currentToken()))
-		rdp.consume(1) // consume ident
-
-		if rdp.currentToken().Type() == token.RPAREN {
-			break
-		}
-
-		if err = rdp.currentToken().Type().AssertEqual(token.COMMA); err != nil {
-			err := errors.New(fmt.Sprintf("invalid function declaration on line %v | %v",
-				rdp.currentToken().LineNumber(), err))
-			rdp.recordError(err)
-			rdp.consumeBlockStatement()
-			return
-		}
-		rdp.consume(1) // consume comma
-
 	}
 	rdp.consume(1) // consume right paren
 

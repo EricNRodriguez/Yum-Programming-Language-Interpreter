@@ -13,7 +13,12 @@ func main() {
 		l lexer.Lexer
 	)
 	f, _ := os.Open("test_files/progressive.txt")
-	l, _ = lexer.NewLexer(f)
+	l, err := lexer.NewLexer(f)
+
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 	defer l.Close()
 
 	p, err := parser.NewRecursiveDescentParser(l)
@@ -23,8 +28,8 @@ func main() {
 	}
 	prog := p.Parse()
 
-	fmt.Println(prog.String())
-	eval.Evaluate(prog)
-
+	//fmt.Println(prog.String())
+	evalu := eval.NewEvaluator()
+	evalu.Evaluate(prog)
 
 }

@@ -1,14 +1,11 @@
-var x = 2;
-
-func shitStank(z) {
-
-    return hello(z) + 23;
+var y2 = 6;
+func hello() {
+    y3 = 22;
 };
 
-func hello(y) {
-  return y;
-};
 
-print(111111111111111);
+hello();
+y2;
 
-print(shitStank(x) + 3);
+
+print(y2);

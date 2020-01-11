@@ -1,9 +1,9 @@
 package parser
 
 import (
+	"Yum-Programming-Language-Interpreter/internal"
 	"Yum-Programming-Language-Interpreter/lexer"
 	"Yum-Programming-Language-Interpreter/token"
-	"errors"
 	"fmt"
 )
 
@@ -33,11 +33,11 @@ func newParserData(l lexer.Lexer) (parserDataInterface, error) {
 	)
 
 	if cT, err = l.NextToken(); err != nil {
-		err = errors.New(fmt.Sprintf("unable to initalise parser, failed to read token | %s", err.Error()))
+		err = internal.NewError(cT.Data(), internal.ERR_INIT_PARSER, internal.InternalErr)
 		return nil, err
 
 	} else if cT.Type() == token.EOF {
-		err = errors.New("unable to parse program with no content | EOF detected at start of program")
+		err = internal.NewError(cT.Data(), internal.ERR_EMPTY_FILE, internal.SyntaxErr)
 		return nil, err
 
 	}
@@ -74,10 +74,10 @@ func (pd *parserData) currentToken() token.Token {
 	return pd.currTok
 }
 
-func (pd *parserData) expectTokenType(e token.TokenType) bool {
-	if err := pd.peekToken().Type().AssertEqual(e); err != nil {
-		err = errors.New(fmt.Sprintf(" error on line %v | %v", pd.peekToken().LineNumber(), err.Error()))
-		pd.recordError(err)
+func (pd *parserData) expectTokenType(e token.TokenType) (b bool) {
+	if pd.peekToken().Type() != e {
+		errMsg := fmt.Sprintf(internal.ERR_INVALID_TOKEN, e, pd.peekToken().Type())
+		pd.recordError(internal.NewError(pd.peekToken().Data(), errMsg, internal.SyntaxErr))
 		return false
 	}
 	return true
@@ -110,12 +110,13 @@ func (pd *parserData) progressToNextSemicolon() {
 	}
 }
 
+
+// need to update to account for nested block statement s
 func (pd *parserData) consumeBlockStatement() {
 	for pd.currentToken().Type() != token.RBRACE {
 		if pd.currentToken().Type() == token.EOF {
-			err := errors.New(fmt.Sprintf("invalid block statement | expected RBRACE on line %v, recieved %v",
-				pd.currentToken().LineNumber(), pd.currentToken().Type()))
-			pd.recordError(err)
+			errMsg := fmt.Sprintf(internal.ERR_INVALID_TOKEN, token.RBRACE, pd.currentToken().Literal())
+			pd.recordError(internal.NewError(pd.currentToken().Data(), errMsg, internal.SyntaxErr))
 			return
 		}
 		pd.consume(1)
@@ -140,3 +141,4 @@ func (pd *parserData) consumeIfStatement() {
 
 	return
 }
+

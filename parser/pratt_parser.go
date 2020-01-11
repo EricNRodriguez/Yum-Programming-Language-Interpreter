@@ -2,9 +2,9 @@ package parser
 
 import (
 	"Yum-Programming-Language-Interpreter/ast"
+	"Yum-Programming-Language-Interpreter/internal"
 	"Yum-Programming-Language-Interpreter/lexer"
 	"Yum-Programming-Language-Interpreter/token"
-	"errors"
 	"fmt"
 	"strconv"
 )
@@ -102,35 +102,34 @@ func newPrattParser(l lexer.Lexer) (prattParserInterface, error) {
 	return pp, err
 }
 
-func (pp *prattParser) parseExpression(precedence operatorPrecedence) (leftExpr ast.Expression) {
+func (pp *prattParser) parseExpression(precedence operatorPrecedence) ( leftExpr ast.Expression) {
 	prefixParseMethod, ok := pp.nudMethods[pp.currentToken().Type()]
-
 	if !ok {
-		err := errors.New(fmt.Sprintf("unable to parse %v | prefix parse function undefined for token type %v",
-			pp.currentToken().Literal(), pp.currentToken().Type()))
-		pp.recordError(err)
-		// iterate over statement and continue
+		errMsg := fmt.Sprintf(internal.ERR_INVALID_PREFIX_OPERATOR, pp.currentToken().Literal())
+		pp.recordError(internal.NewError(pp.currentToken().Data(), errMsg, internal.SyntaxErr))
+		//pp.consumeCurrentStatement()
 		pp.progressToNextSemicolon()
-		return
+
+		return nil
 	}
 
 	leftExpr = prefixParseMethod()
 
 	for !(pp.currentToken().Type() == token.SEMICOLON) && precedence < pp.currentPrecedence() {
-
 		ledMethod, ok := pp.ledMethods[pp.currentToken().Type()]
 		if !ok {
-			err := errors.New(fmt.Sprintf("no led parse function available for %v", pp.currentToken().Type()))
-			pp.recordError(err)
+			errMsg := fmt.Sprintf(internal.ERR_INVALID_INFIX_OPERATOR, pp.currentToken().Literal())
+			pp.recordError(internal.NewError(pp.currentToken().Data(), errMsg, internal.SyntaxErr))
+			//pp.consumeCurrentStatement()
 			pp.progressToNextSemicolon()
-			return
+			return nil
 		}
 
 		leftExpr = ledMethod(leftExpr)
 	}
-
-	return
+	return leftExpr
 }
+
 
 func (pp *prattParser) currentPrecedence() operatorPrecedence {
 	if p, ok := tokenOperPrecedence[pp.currentToken().Type()]; ok {
@@ -142,8 +141,9 @@ func (pp *prattParser) currentPrecedence() operatorPrecedence {
 func (pp *prattParser) parsePrefixOperator() (expr ast.Expression) {
 	prefixOperatorToken := pp.currentToken()
 	pp.consume(1)
-	rightExpr := pp.parseExpression(PREFIX)
-	expr = ast.NewPrefixExpression(prefixOperatorToken, rightExpr)
+	if rightExpr := pp.parseExpression(PREFIX); rightExpr != nil {
+		expr = ast.NewPrefixExpression(prefixOperatorToken, rightExpr)
+	}
 	return
 }
 
@@ -155,9 +155,8 @@ func (pp *prattParser) parseInteger() (expr ast.Expression) {
 
 	// convert string literal to int
 	if i, err = strconv.Atoi(pp.currentToken().Literal()); err != nil {
-		err = errors.New(fmt.Sprintf("unable to parse %v as an integer | %v", pp.currentToken().Literal(),
-			err.Error()))
-		pp.recordError(err)
+		errMsg := fmt.Sprintf(internal.ERR_INVALID_INFIX_OPERATOR, pp.currentToken().Literal())
+		pp.recordError(internal.NewError(pp.currentToken().Data(), errMsg, internal.SyntaxErr))
 		pp.progressToNextSemicolon() // move to next statement and continue
 		return
 	}
@@ -172,25 +171,24 @@ func (pp *prattParser) parseParameters() (parameters []ast.Expression) {
 	parameters = make([]ast.Expression, 0)
 
 	if pp.currentToken().Type() != token.LPAREN {
-		err := errors.New(fmt.Sprintf("invalid syntax on line %v, expected %v, receieved %v",
-			pp.currentToken().LineNumber(), token.LPAREN, pp.currentToken().Literal()))
-		pp.recordError(err)
+		errMsg := fmt.Sprintf(internal.ERR_INVALID_TOKEN, token.LPAREN, pp.currentToken().Literal())
+		pp.recordError(internal.NewError(pp.currentToken().Data(), errMsg, internal.SyntaxErr))
 		parameters = nil
 		return
 	}
 	pp.consume(1)
 
 	for pp.currentToken().Type() != token.RPAREN && pp.currentToken().Type() != token.EOF {
-
 		parameters = append(parameters, pp.parseExpression(MINPRECEDENCE))
 
 		if pp.currentToken().Type() != token.RPAREN {
 
-			if err := pp.currentToken().Type().AssertEqual(token.COMMA); err != nil {
-				err := errors.New(fmt.Sprintf("error on line %v | %v", pp.currentToken().LineNumber(), err))
-				pp.recordError(err)
+			if pp.currentToken().Type() != token.COMMA {
+				errMsg := fmt.Sprintf(internal.ERR_INVALID_TOKEN, ",", pp.currentToken().Literal())
+				pp.recordError(internal.NewError(pp.currentToken().Data(), errMsg, internal.SyntaxErr))
 				parameters = nil
 				return
+
 			}
 			pp.consume(1) // consume comma
 		}
@@ -201,6 +199,7 @@ func (pp *prattParser) parseParameters() (parameters []ast.Expression) {
 }
 
 func (pp *prattParser) parseIdent() (expr ast.Expression) {
+
 	// function call
 	if pp.peekToken().Type() == token.LPAREN {
 		idenToken := pp.currentToken()
@@ -229,13 +228,14 @@ func (pp *prattParser) parseGroupExpression() (expr ast.Expression) {
 	pp.consume(1)
 	if expr = pp.parseExpression(MINPRECEDENCE); expr == nil {
 		pp.progressToNextSemicolon()
-		return
+		return nil
 	}
 
 	if pp.currentToken().Type() != token.RPAREN {
-		err := errors.New(fmt.Sprintf("invalid expression, expected RPAREN , recieved %v",
-			pp.currentToken().Type()))
-		pp.recordError(err)
+		errMsg := fmt.Sprintf(internal.ERR_INVALID_TOKEN, token.RPAREN, pp.currentToken().Literal())
+		pp.recordError(internal.NewError(pp.currentToken().Data(), errMsg, internal.SyntaxErr))
+		//pp.consumeCurrentStatement()
+		return nil
 	}
 	pp.consume(1)
 	return

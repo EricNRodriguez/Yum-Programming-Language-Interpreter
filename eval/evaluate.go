@@ -3,16 +3,302 @@ package eval
 import (
 	"Yum-Programming-Language-Interpreter/ast"
 	"Yum-Programming-Language-Interpreter/object"
+	"Yum-Programming-Language-Interpreter/token"
 )
 
-var (
-	sT = NewSymbolTable()
-	stackTrace = make([]ast.FunctionCallExpression, 0)
-)
+type evalMethod func(node ast.Node) object.Object
 
-func Evaluate(node ast.Node) object.Object {
-	if method, ok := evalMethodRouter[node.Type()]; ok {
+type Evaluator struct {
+	stackTrace   StackTrace
+	symbolTable  SymbolTable
+	methodRouter map[ast.NodeType]evalMethod
+}
+
+func NewEvaluator() (e *Evaluator) {
+	e = &Evaluator{
+		symbolTable: NewSymbolTable(),
+		stackTrace:  NewStackTrace(),
+	}
+
+	e.methodRouter = map[ast.NodeType]evalMethod{
+		ast.PROGRAM:                        e.evaluateProgram,
+		ast.IDENTIFIER:                     e.evaluateIdentifier,
+		ast.PREFIX_EXPRESSION:              e.evaluatePrefixExpression,
+		ast.INFIX_EXPRESSION:               e.evaluateInfixExpression,
+		ast.INTEGER_EXPRESSION:             e.evaluateIntegerExpression,
+		ast.BOOLEAN_EXPRESSION:             e.evaluateBooleanExpression,
+		ast.FUNC_CALL_EXPRESSION:           e.evaluateFunctionCallExpression,
+		ast.IDENTIFIER_EXPRESSION:          e.evaluateIdentifierExpression,
+		ast.VAR_STATEMENT:                  e.evaluateVarStatement,
+		ast.RETURN_STATEMENT:               e.evaluateReturnStatement,
+		ast.EXPRESSION_STATEMENT:           e.evaluateExpressionStatement,
+		ast.IF_STATEMENT:                   e.evaluateIfStatement,
+		ast.FUNCTION_DECLARATION_STATEMENT: e.evaluateFunctionDeclarationStatement,
+		ast.ASSIGNMENT_STATEMENT:           e.evaluateAssignmentStatement,
+	}
+
+	return
+}
+
+func (e *Evaluator) Evaluate(node ast.Node) (o object.Object) {
+	if method, ok := e.methodRouter[node.Type()]; ok {
 		return method(node)
 	}
 	return nil
+}
+
+func (e *Evaluator) evaluateProgram(node ast.Node) (o object.Object) {
+	prog := node.(*ast.Program)
+	return e.evaluateBlockStatement(prog.Statements...)
+}
+
+func (e *Evaluator) evaluateIdentifier(node ast.Node) (o object.Object) {
+	iden := node.(*ast.Identifier)
+	o, _ = e.symbolTable.GetVar(iden.Name)
+	return
+}
+
+func (e *Evaluator) evaluateIdentifierExpression(node ast.Node) object.Object {
+	idenExpr := node.(*ast.IdentifierExpression)
+	return e.evaluateIdentifier(idenExpr.Node)
+}
+
+func (e *Evaluator) evaluatePrefixExpression(node ast.Node) (o object.Object) {
+	pExpr := node.(*ast.PrefixExpression)
+	rObj := e.Evaluate(pExpr.Expression)
+
+	if rObj.Type() == object.INTEGER {
+
+		rObj := rObj.(*object.Integer)
+		switch pExpr.Token.Type() {
+		case token.ADD:
+			o = rObj
+		case token.SUB:
+			o = object.NewInteger(-1 * rObj.Value)
+		case token.NEGATE:
+			o = object.NewBoolean(rObj.Value == 0)
+		default:
+			o = object.NewNull()
+		}
+
+	} else if rObj.Type() == object.BOOLEAN {
+
+		rObj := rObj.(*object.Boolean)
+		switch pExpr.Token.Type() {
+		case token.ADD:
+			o = object.NewNull()
+		case token.SUB:
+			o = object.NewNull()
+		case token.NEGATE:
+			o = object.NewBoolean(!rObj.Value)
+		default:
+			o = object.NewNull()
+		}
+
+	} else {
+		// null object
+		o = object.NewNull()
+	}
+	return
+}
+
+func (e *Evaluator) evaluateInfixExpression(node ast.Node) (o object.Object) {
+	iExpr := node.(*ast.InfixExpression)
+	lObj := e.unpack(e.Evaluate(iExpr.LeftExpression))
+	rObj := e.unpack(e.Evaluate(iExpr.RightExpression))
+
+	if lObj.Type() == rObj.Type() {
+		if lObj.Type() == object.INTEGER {
+			lObj := lObj.(*object.Integer)
+			rObj := rObj.(*object.Integer)
+
+			switch iExpr.Token.Type() {
+			case token.ADD:
+				o = object.NewInteger(lObj.Value + rObj.Value)
+			case token.SUB:
+				o = object.NewInteger(lObj.Value - rObj.Value)
+			case token.DIV:
+				// check for zero division !! -----------------------------------------------
+				o = object.NewInteger(lObj.Value / rObj.Value)
+			case token.MULT:
+				o = object.NewInteger(lObj.Value * rObj.Value)
+			case token.GTHAN:
+				o = object.NewBoolean(lObj.Value > rObj.Value)
+			case token.LTHAN:
+				o = object.NewBoolean(lObj.Value < rObj.Value)
+			case token.GTEQUAL:
+				o = object.NewBoolean(lObj.Value >= rObj.Value)
+			case token.LTEQUAL:
+				o = object.NewBoolean(lObj.Value <= rObj.Value)
+			case token.EQUAL:
+				o = object.NewBoolean(lObj.Value == rObj.Value)
+			case token.NEQUAL:
+				o = object.NewBoolean(lObj.Value != rObj.Value)
+			case token.AND:
+				o = object.NewBoolean(lObj.Value != 0 && rObj.Value != 0)
+			case token.OR:
+				o = object.NewBoolean(lObj.Value != 0 || rObj.Value != 0)
+			default:
+				// raise an error here!
+				o = object.NewNull()
+			}
+		} else {
+			lObj := lObj.(*object.Boolean)
+			rObj := rObj.(*object.Boolean)
+			switch iExpr.Token.Type() {
+			case token.EQUAL:
+				o = object.NewBoolean(lObj.Value == rObj.Value)
+			case token.NEQUAL:
+				o = object.NewBoolean(lObj.Value != rObj.Value)
+			case token.AND:
+				o = object.NewBoolean(lObj.Value && rObj.Value)
+			case token.OR:
+				o = object.NewBoolean(lObj.Value || rObj.Value)
+			default:
+				// raise an error here! -----------------------------------------------------
+				o = object.NewNull()
+			}
+		}
+	} else {
+		o = object.NewNull()
+	}
+
+	return
+}
+
+func (e *Evaluator) unpack(o object.Object) object.Object {
+	if o.Type() != object.RETURN {
+		return o
+	}
+	oV := o.(*object.ReturnValue).Value
+	return e.unpack(oV)
+}
+
+func (e *Evaluator) evaluateIntegerExpression(node ast.Node) object.Object {
+	i := node.(*ast.IntegerExpression)
+	o := object.NewInteger(i.Value)
+	return o
+}
+
+func (e *Evaluator) evaluateBooleanExpression(node ast.Node) object.Object {
+	b := node.(*ast.BooleanExpression)
+	o := object.NewBoolean(b.Value)
+	return o
+}
+
+func (e *Evaluator) evaluateFunctionCallExpression(node ast.Node) (o object.Object) {
+	fCall := node.(*ast.FunctionCallExpression)
+	e.stackTrace.Push(fCall) // record function call
+
+	// native function call
+	if f, ok := e.symbolTable.GetUserFunc(fCall.FunctionName); !ok {
+
+		// evaluate parameters
+		evalParams := make([]object.Object, len(fCall.Parameters))
+		for i, expr := range fCall.Parameters {
+			evalParams[i] = e.Evaluate(expr)
+		}
+
+		f, _ := e.symbolTable.GetNativeFunc(fCall.FunctionName)
+		o = f.Function(evalParams...)
+
+
+		// user defined function
+	} else {
+		// evaluate parameters
+		paramValues := map[string]object.Object{}
+		for i := range fCall.Parameters {
+			paramValues[f.Parameters[i]] = e.Evaluate(fCall.Parameters[i])
+		}
+
+		// execute function call
+		e.symbolTable.EnterScope()
+		defer e.symbolTable.ExitScope()
+
+		// new symbol table
+		oST := e.symbolTable
+		e.symbolTable = NewSymbolTable()
+
+		for k, v := range paramValues {
+			e.symbolTable.SetVar(k, v)
+		}
+
+		o = e.evaluateBlockStatement(f.Body...)
+		if o.Type() != object.RETURN {
+			o = object.NewNull()
+		}
+		e.symbolTable = oST
+
+	}
+	return o
+}
+
+func (e *Evaluator) evaluateVarStatement(node ast.Node) object.Object {
+	vStmt := node.(*ast.VarStatement)
+	leftObj := e.Evaluate(vStmt.Expression)
+	e.symbolTable.SetVar(vStmt.Identifier.String(), leftObj)
+	return object.NewNull()
+}
+
+func (e *Evaluator) evaluateAssignmentStatement(node ast.Node) object.Object {
+	vStmt := node.(*ast.AssignmentStatement)
+	leftObj := e.Evaluate(vStmt.Expression)
+	e.symbolTable.UpdateVar(vStmt.Identifier.String(), leftObj)
+	return object.NewNull()
+}
+
+func (e *Evaluator) evaluateReturnStatement(node ast.Node) object.Object {
+	n := node.(*ast.ReturnStatement)
+	o := e.Evaluate(n.Expression)
+	return object.NewReturnValue(o)
+}
+
+func (e *Evaluator) evaluateExpressionStatement(node ast.Node) object.Object {
+	expr := node.(*ast.ExpressionStatement)
+	o := e.Evaluate(expr.Expression)
+	return o
+}
+
+func (e *Evaluator) evaluateBlockStatement(stmt ...ast.Statement) (o object.Object) {
+	for _, s := range stmt {
+		if o = e.Evaluate(s); o.Type() == object.RETURN {
+			return
+		}
+	}
+	return
+}
+
+func (e *Evaluator) evaluateIfStatement(node ast.Node) (o object.Object) {
+	ifStmt := node.(*ast.IfStatement)
+	cond := e.Evaluate(ifStmt.Condition)
+	if cond.Type() == object.BOOLEAN {
+		cond := cond.(*object.Boolean)
+		if cond.Value {
+			e.symbolTable.EnterScope()
+			o = e.evaluateBlockStatement(ifStmt.IfBlock...)
+			e.symbolTable.ExitScope()
+		} else if ifStmt.ElseBlock != nil {
+			e.symbolTable.EnterScope()
+			o = e.evaluateBlockStatement(ifStmt.ElseBlock...)
+			e.symbolTable.ExitScope()
+		} else {
+			// potentially implement a quick method to just skip to the next statement --------------------------------
+			o = object.NewNull()
+		}
+	} else {
+		// record an error
+		o = object.NewNull()
+	}
+	return
+}
+
+func (e *Evaluator) evaluateFunctionDeclarationStatement(node ast.Node) object.Object {
+	fDec := node.(*ast.FunctionDeclarationStatement)
+	paramNames := make([]string, len(fDec.Parameters))
+	for i, n := range fDec.Parameters {
+		paramNames[i] = n.Name
+	}
+	o := object.NewUserFunction(fDec.Name, paramNames, fDec.Body)
+	e.symbolTable.SetUserFunc(*o)
+	return object.NewNull()
 }

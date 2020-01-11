@@ -1,10 +1,9 @@
 package lexer
 
 import (
+	"Yum-Programming-Language-Interpreter/internal"
 	"Yum-Programming-Language-Interpreter/token"
 	"bufio"
-	"errors"
-	"fmt"
 	"io"
 	"os"
 )
@@ -32,7 +31,7 @@ func NewLexer(f *os.File) (l Lexer, err error) {
 	r = bufio.NewReader(f)
 
 	if line, _, err = r.ReadLine(); err != nil {
-		err = errors.New(fmt.Sprintf("Empty file, unable to parse | %s", err.Error()))
+		err = internal.NewError(token.NewMetatadata(0, f.Name()), internal.ERR_EMPTY_FILE, internal.SyntaxErr)
 		return
 	}
 
@@ -55,12 +54,18 @@ func (l *lexer) readChars(n int) (chars []byte, err error) {
 	return
 }
 
-func (l *lexer) validVariableNameCharacter(b byte) bool {
+
+func (l *lexer) validVariableNameStartCharacter(b byte) bool {
 	return (b >= 65 && b <= 90) || (b >= 97 && b <= 122)
+}
+
+func (l *lexer) validVariableNameCharacter(b byte) bool {
+	return (b >= 65 && b <= 90) || (b >= 97 && b <= 122) || (b >= 48 && b <= 57)
 }
 
 func (l *lexer) readIdentifier() (idt []byte) {
 	idt = make([]byte, 0)
+
 	// ascii characters
 	for l.currentLineIndex < len(l.currentLine) && l.validVariableNameCharacter(l.currentLine[l.currentLineIndex]) {
 		idt = append(idt, l.currentLine[l.currentLineIndex])
@@ -139,11 +144,11 @@ func (l *lexer) NextToken() (t token.Token, err error) {
 		tt, _ := l.trailingTerminal()
 		switch tt {
 		case token.ASSIGN:
-			t = token.NewToken(token.EQUAL, s, l.currentLineNumber, l.fileName)
+			t = token.NewToken(token.EQUAL, s+s, l.currentLineNumber, l.fileName)
 		default:
 			// shift back, unread trailing terminal
 			l.currentLineIndex--
-			t = token.NewToken(token.ASSIGN, s+s, l.currentLineNumber, l.fileName)
+			t = token.NewToken(token.ASSIGN, s, l.currentLineNumber, l.fileName)
 		}
 	case token.NEGATE:
 		tt, _ := l.trailingTerminal()
@@ -205,7 +210,7 @@ func (l *lexer) NextToken() (t token.Token, err error) {
 		l.currentLineIndex -= 1
 
 		// recognise keywords, booleans and identifiers
-		if l.validVariableNameCharacter(l.currentLine[l.currentLineIndex]) {
+		if l.validVariableNameStartCharacter(l.currentLine[l.currentLineIndex]) {
 			idt := string(l.readIdentifier())
 			idtType := classifyTokenLiteral(idt)
 			t = token.NewToken(idtType, idt, l.currentLineNumber, l.fileName)
