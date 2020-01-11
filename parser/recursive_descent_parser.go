@@ -36,12 +36,12 @@ func NewRecursiveDescentParser(l lexer.Lexer) (Parser, error) {
 	pMR[token.RETURN] = rdp.parseReturnStatement
 	pMR[token.IDEN] = rdp.parseIdenStatement
 	//pMR[token.INT] = rdp.parseExpressionStatement
-	pMR[token.BOOLEAN] = rdp.parseExpressionStatement
+	//pMR[token.BOOLEAN] = rdp.parseExpressionStatement
 	pMR[token.IF] = rdp.parseIfStatement
 	pMR[token.FUNC] = rdp.parseFuncDeclarationStatement
-	pMR[token.NEGATE] = rdp.parseExpressionStatement
-	pMR[token.SUB] = rdp.parseExpressionStatement
-	pMR[token.ADD] = rdp.parseExpressionStatement
+	//pMR[token.NEGATE] = rdp.parseExpressionStatement
+	//pMR[token.SUB] = rdp.parseExpressionStatement
+	//pMR[token.ADD] = rdp.parseExpressionStatement
 
 	return rdp, err
 }

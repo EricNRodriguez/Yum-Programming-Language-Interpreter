@@ -151,6 +151,30 @@ func (fds *FunctionDeclarationStatement) Type() NodeType {
 }
 
 func (fds *FunctionDeclarationStatement) statementFunction() {}
+//
+//type FunctionCallStatement struct {
+//	token.Metadata
+//	Name       string
+//	Parameters []Expression
+//}
+//
+//func NewFunctionCallStatement(md token.Metadata, n string, ps []Expression) *FunctionCallStatement {
+//	return &FunctionCallStatement{
+//		Metadata:   md,
+//		Name:       n,
+//		Parameters: ps,
+//	}
+//}
+//
+//func (fcs *FunctionCallStatement) String() string {
+//	return fmt.Sprintf("%v(%v);", fcs.Name, expressionArrayToString(fcs.Parameters))
+//}
+//
+//func (fcs *FunctionCallStatement) Type() NodeType {
+//	return FUNCTION_CALL_STATEMENT
+//}
+//
+//func (fcs *FunctionCallStatement) statementFunction() {}
 
 func statementArrayToString(staArr []Statement) string {
 	var strArr = make([]string, len(staArr))
@@ -159,3 +183,5 @@ func statementArrayToString(staArr []Statement) string {
 	}
 	return strings.Join(strArr, ", ")
 }
+
+

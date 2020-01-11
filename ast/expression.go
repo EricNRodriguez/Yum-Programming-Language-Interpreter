@@ -2,9 +2,9 @@ package ast
 
 import (
 	"Yum-Programming-Language-Interpreter/token"
-	"bytes"
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 type PrefixExpression struct {
@@ -115,17 +115,7 @@ func NewFunctionCallExpression(md token.Metadata, fName string, params ...Expres
 }
 
 func (fc *FunctionCallExpression) String() string {
-	pBuff := bytes.Buffer{}
-	if fc.Parameters != nil {
-		for i, param := range fc.Parameters {
-			pBuff.WriteString(param.String())
-			if i != len(fc.Parameters)-1 {
-				pBuff.WriteString(", ")
-			}
-		}
-	}
-
-	return fmt.Sprintf("%v(%v)", fc.FunctionName, pBuff.String())
+	return fmt.Sprintf("%v(%v)", fc.FunctionName, expressionArrayToString(fc.Parameters))
 }
 
 func (fc *FunctionCallExpression) Type() NodeType {
@@ -149,3 +139,12 @@ func (i *IdentifierExpression) Type() NodeType {
 }
 
 func (i *IdentifierExpression) expressionFunction() {}
+
+
+func expressionArrayToString(staArr []Expression) string {
+	var strArr = make([]string, len(staArr))
+	for i, sta := range staArr {
+		strArr[i] = sta.String()
+	}
+	return strings.Join(strArr, ", ")
+}

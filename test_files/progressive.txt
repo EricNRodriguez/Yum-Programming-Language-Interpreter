@@ -1,10 +1,11 @@
 var y2 = 6;
-func hello() {
+func hello(a,b,c) {
     y3 = 22;
+    print(b);
 };
 
 
-hello();
+hello(1,2,3);
 y2;
 
 

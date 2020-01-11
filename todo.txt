@@ -6,3 +6,4 @@
 - function must have parameters, otherwise program crashes (fix this)
 - function is able to update params outside of the func (fix this)
 - if function returns but the caller doesnt use the result, the return is executed where the function was called (error)
+- functions can be called with a differing number of parameters
