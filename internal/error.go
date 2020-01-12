@@ -15,15 +15,17 @@ func (eT ErrorType) Name() string {
 		return "RUNTIME ERROR"
 	case InternalErr:
 		return "INTERNAL PROGRAM ERROR"
+	case SemanticErr:
+		return "SEMANTIC ERROR"
 	default:
 		return "UNKNOWN ERROR TYPE"
 	}
 }
 
-
 const (
 	SyntaxErr ErrorType = iota
 	RuntimeErr
+	SemanticErr
 	InternalErr
 )
 

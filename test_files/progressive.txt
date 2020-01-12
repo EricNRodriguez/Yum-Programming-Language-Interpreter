@@ -1,12 +1,16 @@
-var y2 = 6;
-func hello(a,b,c) {
-    y3 = 22;
-    print(b);
+
+func poo(d) {
+    print(d);
 };
 
+func test(a) {
+    poo(a);
+};
 
-hello(1,2,3);
-y2;
+var y2 = 6;
+if (true) {
+    var y3 = 22;
+    print(y2);
+};
 
-
-print(y2);
+test(-y2 + 23);

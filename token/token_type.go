@@ -45,7 +45,7 @@ const (
 	LBRACKET TokenType = "["
 	RBRACKET TokenType = "]"
 
-	IDEN    TokenType = "IDEN"
+	IDEN    TokenType = "IDENTIFIER"
 	INT     TokenType = "INT"
 	BOOLEAN TokenType = "BOOL"
 )

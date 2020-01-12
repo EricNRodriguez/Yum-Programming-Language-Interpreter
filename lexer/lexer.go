@@ -54,7 +54,6 @@ func (l *lexer) readChars(n int) (chars []byte, err error) {
 	return
 }
 
-
 func (l *lexer) validVariableNameStartCharacter(b byte) bool {
 	return (b >= 65 && b <= 90) || (b >= 97 && b <= 122)
 }

@@ -4,6 +4,7 @@ import (
 	"Yum-Programming-Language-Interpreter/eval"
 	"Yum-Programming-Language-Interpreter/lexer"
 	"Yum-Programming-Language-Interpreter/parser"
+	"Yum-Programming-Language-Interpreter/semantic"
 	"fmt"
 	"os"
 )
@@ -26,10 +27,19 @@ func main() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+
 	prog := p.Parse()
+
+	sA := semantic.NewSemanticAnalyser()
+	sA.Analyse(prog)
+	for _, e := range sA.SemanticErrors() {
+		fmt.Println(e)
+	}
 
 	//fmt.Println(prog.String())
 	evalu := eval.NewEvaluator()
-	evalu.Evaluate(prog)
+	if len(sA.SemanticErrors()) == 0 {
+		evalu.Evaluate(prog)
+	}
 
 }

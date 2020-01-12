@@ -110,7 +110,6 @@ func (pd *parserData) progressToNextSemicolon() {
 	}
 }
 
-
 // need to update to account for nested block statement s
 func (pd *parserData) consumeBlockStatement() {
 	for pd.currentToken().Type() != token.RBRACE {
@@ -141,4 +140,3 @@ func (pd *parserData) consumeIfStatement() {
 
 	return
 }
-

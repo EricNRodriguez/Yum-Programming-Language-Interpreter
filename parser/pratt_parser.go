@@ -102,7 +102,7 @@ func newPrattParser(l lexer.Lexer) (prattParserInterface, error) {
 	return pp, err
 }
 
-func (pp *prattParser) parseExpression(precedence operatorPrecedence) ( leftExpr ast.Expression) {
+func (pp *prattParser) parseExpression(precedence operatorPrecedence) (leftExpr ast.Expression) {
 	prefixParseMethod, ok := pp.nudMethods[pp.currentToken().Type()]
 	if !ok {
 		errMsg := fmt.Sprintf(internal.ERR_INVALID_PREFIX_OPERATOR, pp.currentToken().Literal())
@@ -129,7 +129,6 @@ func (pp *prattParser) parseExpression(precedence operatorPrecedence) ( leftExpr
 	}
 	return leftExpr
 }
-
 
 func (pp *prattParser) currentPrecedence() operatorPrecedence {
 	if p, ok := tokenOperPrecedence[pp.currentToken().Type()]; ok {

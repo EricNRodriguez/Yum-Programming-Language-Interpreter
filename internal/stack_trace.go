@@ -1,4 +1,4 @@
-package eval
+package internal
 
 import (
 	"Yum-Programming-Language-Interpreter/ast"

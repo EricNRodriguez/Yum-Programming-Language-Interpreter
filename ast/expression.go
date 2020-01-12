@@ -125,12 +125,12 @@ func (fc *FunctionCallExpression) Type() NodeType {
 func (fc *FunctionCallExpression) expressionFunction() {}
 
 type IdentifierExpression struct {
-	Node
+	*Identifier
 }
 
 func NewIdentifierExpression(t token.Token) Expression {
 	return &IdentifierExpression{
-		Node: NewIdentifier(t),
+		Identifier: NewIdentifier(t),
 	}
 }
 
@@ -139,7 +139,6 @@ func (i *IdentifierExpression) Type() NodeType {
 }
 
 func (i *IdentifierExpression) expressionFunction() {}
-
 
 func expressionArrayToString(staArr []Expression) string {
 	var strArr = make([]string, len(staArr))

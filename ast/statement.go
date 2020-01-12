@@ -70,25 +70,25 @@ func (r *ReturnStatement) Type() NodeType {
 
 func (r *ReturnStatement) statementFunction() {}
 
-type ExpressionStatement struct {
-	Expression
+type FunctionCallStatement struct {
+	*FunctionCallExpression
 }
 
-func NewExpressionStatment(e Expression) Statement {
-	return &ExpressionStatement{
-		Expression: e,
+func NewFunctionCallStatement(e *FunctionCallExpression) *FunctionCallStatement {
+	return &FunctionCallStatement{
+		FunctionCallExpression: e,
 	}
 }
 
-func (es *ExpressionStatement) String() string {
-	return fmt.Sprintf("%v;", es.Expression.String())
+func (fc *FunctionCallStatement) String() string {
+	return fmt.Sprintf("%v;", fc.FunctionCallExpression.String())
 }
 
-func (es *ExpressionStatement) Type() NodeType {
-	return EXPRESSION_STATEMENT
+func (fc *FunctionCallStatement) Type() NodeType {
+	return FUNCTION_CALL_STATEMENT
 }
 
-func (es *ExpressionStatement) statementFunction() {}
+func (fc *FunctionCallStatement) statementFunction() {}
 
 type IfStatement struct {
 	token.Metadata
@@ -151,30 +151,6 @@ func (fds *FunctionDeclarationStatement) Type() NodeType {
 }
 
 func (fds *FunctionDeclarationStatement) statementFunction() {}
-//
-//type FunctionCallStatement struct {
-//	token.Metadata
-//	Name       string
-//	Parameters []Expression
-//}
-//
-//func NewFunctionCallStatement(md token.Metadata, n string, ps []Expression) *FunctionCallStatement {
-//	return &FunctionCallStatement{
-//		Metadata:   md,
-//		Name:       n,
-//		Parameters: ps,
-//	}
-//}
-//
-//func (fcs *FunctionCallStatement) String() string {
-//	return fmt.Sprintf("%v(%v);", fcs.Name, expressionArrayToString(fcs.Parameters))
-//}
-//
-//func (fcs *FunctionCallStatement) Type() NodeType {
-//	return FUNCTION_CALL_STATEMENT
-//}
-//
-//func (fcs *FunctionCallStatement) statementFunction() {}
 
 func statementArrayToString(staArr []Statement) string {
 	var strArr = make([]string, len(staArr))
@@ -183,5 +159,3 @@ func statementArrayToString(staArr []Statement) string {
 	}
 	return strings.Join(strArr, ", ")
 }
-
-
