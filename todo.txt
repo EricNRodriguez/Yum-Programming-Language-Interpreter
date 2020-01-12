@@ -1,12 +1,1 @@
-- semantic analysis
-
-- functions can be called with a differing number of parameters
-
-
-- func shit(b) {
-      print(3);
-      return 4; <- remove return and it crashes
-  };
-
-  var y = shit(2);
 
