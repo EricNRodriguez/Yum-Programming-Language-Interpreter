@@ -55,10 +55,10 @@ func (i *InfixExpression) expressionFunction() {}
 
 type IntegerExpression struct {
 	token.Metadata
-	Value int
+	Value int64
 }
 
-func NewIntegerExpression(t token.Token, i int) *IntegerExpression {
+func NewIntegerExpression(t token.Token, i int64) *IntegerExpression {
 	return &IntegerExpression{
 		Metadata: t.Data(),
 		Value:    i,
@@ -66,7 +66,7 @@ func NewIntegerExpression(t token.Token, i int) *IntegerExpression {
 }
 
 func (ie *IntegerExpression) String() string {
-	return strconv.Itoa(ie.Value)
+	return strconv.FormatInt(ie.Value, 10)
 }
 
 func (ie *IntegerExpression) Type() NodeType {

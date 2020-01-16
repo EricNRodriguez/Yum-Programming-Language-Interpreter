@@ -12,8 +12,8 @@ type analysisMethod func(node ast.Node)
 
 type SemanticAnalyser struct {
 	symbol_table.SymbolTable
-	semanticErrors []error
-	methodRouter   map[ast.NodeType]analysisMethod
+	semanticErrors   []error
+	methodRouter     map[ast.NodeType]analysisMethod
 	currentStatement ast.NodeType
 }
 
@@ -25,7 +25,7 @@ func NewSemanticAnalyser() (sA *SemanticAnalyser) {
 	}
 
 	sA.methodRouter = map[ast.NodeType]analysisMethod{
-		ast.PROGRAM: sA.analyseProgram,
+		ast.PROGRAM:                        sA.analyseProgram,
 		ast.PREFIX_EXPRESSION:              sA.analysePrefixExpression,
 		ast.INFIX_EXPRESSION:               sA.analyseInfixExpression,
 		ast.FUNC_CALL_EXPRESSION:           sA.analyseFunctionCallExpression,
@@ -59,20 +59,12 @@ func (sA *SemanticAnalyser) analyseProgram(node ast.Node) {
 func (sA *SemanticAnalyser) analyseIdentifierExpression(node ast.Node) {
 	stmt := node.(*ast.IdentifierExpression)
 
-	if sA.currentStatement == ast.VAR_STATEMENT {
-		if !sA.AvailableVar(stmt.Identifier.Name, false) {
-			errMsg := fmt.Sprintf(internal.DeclaredVariableErr, stmt.Identifier.Name)
-			sA.recordError(internal.NewError(stmt.Metadata, errMsg,
-				internal.SemanticErr))
-			return
-		}
-	} else {
-		if sA.AvailableVar(stmt.Name, true) {
-			errMsg := fmt.Sprintf(internal.UndeclaredIdentifierErr, stmt.Name)
-			sA.recordError(internal.NewError(stmt.Metadata, errMsg, internal.SemanticErr))
-			return
-		}
+	if sA.AvailableVar(stmt.Name, true) {
+		errMsg := fmt.Sprintf(internal.UndeclaredIdentifierErr, stmt.Name)
+		sA.recordError(internal.NewError(stmt.Metadata, errMsg, internal.SemanticErr))
+		return
 	}
+
 	return
 }
 
@@ -115,7 +107,6 @@ func (sA *SemanticAnalyser) analyseFunctionCallExpression(node ast.Node) {
 	return
 }
 
-
 func (sA *SemanticAnalyser) analyseReturnStatement(node ast.Node) {
 	rS := node.(*ast.ReturnStatement)
 	if !sA.InFunctionCall() {
@@ -150,7 +141,12 @@ func (sA *SemanticAnalyser) analyseIfStatement(node ast.Node) {
 func (sA *SemanticAnalyser) analyseVarStatement(node ast.Node) {
 	stmt := node.(*ast.VarStatement)
 
-	sA.Analyse(stmt.Identifier)
+	if !sA.AvailableVar(stmt.Identifier.Name, false) {
+		errMsg := fmt.Sprintf(internal.DeclaredVariableErr, stmt.Identifier.Name)
+		sA.recordError(internal.NewError(stmt.Metadata, errMsg,
+			internal.SemanticErr))
+		return
+	}
 
 	// save var
 	sA.SetVar(stmt.Identifier.Name, object.NewNull())
@@ -183,7 +179,6 @@ func (sA *SemanticAnalyser) analyseFunctionDeclarationStatement(node ast.Node) {
 		sA.recordError(internal.NewError(fDec.Metadata, errMsg, internal.SemanticErr))
 		return
 	}
-
 
 	// declare func
 	sA.SetUserFunc(object.NewUserFunction(fDec.Name, make([]string, len(fDec.Parameters)), []ast.Statement{}))

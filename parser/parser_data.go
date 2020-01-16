@@ -33,11 +33,11 @@ func newParserData(l lexer.Lexer) (parserDataInterface, error) {
 	)
 
 	if cT, err = l.NextToken(); err != nil {
-		err = internal.NewError(cT.Data(), internal.ERR_INIT_PARSER, internal.InternalErr)
+		err = internal.NewError(cT.Data(), internal.ErrInitParser, internal.InternalErr)
 		return nil, err
 
 	} else if cT.Type() == token.EOF {
-		err = internal.NewError(cT.Data(), internal.ERR_EMPTY_FILE, internal.SyntaxErr)
+		err = internal.NewError(cT.Data(), internal.ErrEmptyFile, internal.SyntaxErr)
 		return nil, err
 
 	}
@@ -76,7 +76,7 @@ func (pd *parserData) currentToken() token.Token {
 
 func (pd *parserData) expectTokenType(e token.TokenType) (b bool) {
 	if pd.peekToken().Type() != e {
-		errMsg := fmt.Sprintf(internal.ERR_INVALID_TOKEN, e, pd.peekToken().Type())
+		errMsg := fmt.Sprintf(internal.InvalidTokenErr, e, pd.peekToken().Type())
 		pd.recordError(internal.NewError(pd.peekToken().Data(), errMsg, internal.SyntaxErr))
 		return false
 	}
@@ -114,7 +114,7 @@ func (pd *parserData) progressToNextSemicolon() {
 func (pd *parserData) consumeBlockStatement() {
 	for pd.currentToken().Type() != token.RBRACE {
 		if pd.currentToken().Type() == token.EOF {
-			errMsg := fmt.Sprintf(internal.ERR_INVALID_TOKEN, token.RBRACE, pd.currentToken().Literal())
+			errMsg := fmt.Sprintf(internal.InvalidTokenErr, token.RBRACE, pd.currentToken().Literal())
 			pd.recordError(internal.NewError(pd.currentToken().Data(), errMsg, internal.SyntaxErr))
 			return
 		}

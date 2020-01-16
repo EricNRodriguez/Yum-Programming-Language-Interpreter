@@ -31,7 +31,7 @@ func NewLexer(f *os.File) (l Lexer, err error) {
 	r = bufio.NewReader(f)
 
 	if line, _, err = r.ReadLine(); err != nil {
-		err = internal.NewError(token.NewMetatadata(0, f.Name()), internal.ERR_EMPTY_FILE, internal.SyntaxErr)
+		err = internal.NewError(token.NewMetatadata(0, f.Name()), internal.ErrEmptyFile, internal.SyntaxErr)
 		return
 	}
 

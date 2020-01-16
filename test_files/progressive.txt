@@ -1,16 +1,13 @@
-
-func poo(d) {
-    print(d);
+func hello(a,b) {
+    print(a - b);
 };
 
-func test(a) {
-    poo(a);
+func she(a,b) {
+    print(a & b);
+    return hello(a,b);
 };
 
-var y2 = 6;
-if (true) {
-    var y3 = 22;
-    print(y2);
-};
+var x = she(true, false);
 
-test(-y2 + 23);
+
+

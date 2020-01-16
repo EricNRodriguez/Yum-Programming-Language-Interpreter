@@ -78,7 +78,7 @@ func (rdp *RecursiveDescentParser) parseStatement() (stmt ast.Statement, err err
 	} else {
 		stmt = parser()
 		if rdp.currentToken().Type() != token.SEMICOLON {
-			errMsg := fmt.Sprintf(internal.ERR_INVALID_TOKEN, ";", rdp.currentToken().Literal())
+			errMsg := fmt.Sprintf(internal.InvalidTokenErr, ";", rdp.currentToken().Literal())
 			return nil, internal.NewError(rdp.currentToken().Data(), errMsg, internal.SyntaxErr)
 		}
 	}
@@ -192,7 +192,7 @@ func (rdp *RecursiveDescentParser) parseIfStatement() (stmt ast.Statement) {
 func (rdp *RecursiveDescentParser) parseBlockStatement() (bStmt []ast.Statement) {
 	bStmt = make([]ast.Statement, 0)
 	if rdp.currentToken().Type() != token.LBRACE {
-		errMsg := fmt.Sprintf(internal.ERR_INVALID_TOKEN, token.LBRACE, rdp.currentToken().Literal())
+		errMsg := fmt.Sprintf(internal.InvalidTokenErr, token.LBRACE, rdp.currentToken().Literal())
 		rdp.recordError(internal.NewError(rdp.currentToken().Data(), errMsg, internal.SyntaxErr))
 		rdp.consumeIfStatement()
 		return
@@ -211,7 +211,7 @@ func (rdp *RecursiveDescentParser) parseBlockStatement() (bStmt []ast.Statement)
 	}
 
 	if rdp.currentToken().Type() != token.RBRACE {
-		errMsg := fmt.Sprintf(internal.ERR_INVALID_TOKEN, token.RBRACE, rdp.currentToken().Literal())
+		errMsg := fmt.Sprintf(internal.InvalidTokenErr, token.RBRACE, rdp.currentToken().Literal())
 		rdp.recordError(internal.NewError(rdp.currentToken().Data(), errMsg, internal.SyntaxErr))
 		return
 
@@ -243,7 +243,7 @@ func (rdp *RecursiveDescentParser) parseFuncDeclarationStatement() (stmt ast.Sta
 	params = make([]ast.Identifier, len(ps))
 	for i, p := range ps {
 		if p.Type() != ast.IDENTIFIER_EXPRESSION {
-			errMsg := fmt.Sprintf(internal.ERR_INVALID_TOKEN, token.IDEN, p.String())
+			errMsg := fmt.Sprintf(internal.InvalidTokenErr, token.IDEN, p.String())
 			rdp.recordError(internal.NewError(token.NewMetatadata(p.LineNumber(), p.FileName()), errMsg, internal.SyntaxErr))
 			rdp.consumeBlockStatement()
 			return

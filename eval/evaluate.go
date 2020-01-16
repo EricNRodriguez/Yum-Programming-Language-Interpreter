@@ -6,6 +6,8 @@ import (
 	"Yum-Programming-Language-Interpreter/object"
 	"Yum-Programming-Language-Interpreter/symbol_table"
 	"Yum-Programming-Language-Interpreter/token"
+	"fmt"
+	"os"
 )
 
 type evalMethod func(node ast.Node) object.Object
@@ -78,7 +80,8 @@ func (e *Evaluator) evaluatePrefixExpression(node ast.Node) (o object.Object) {
 		case token.SUB:
 			o = object.NewInteger(-1 * rObj.Value)
 		case token.NEGATE:
-			o = object.NewBoolean(rObj.Value == 0)
+			e.panic(internal.NewError(pExpr.Data(), fmt.Sprintf(internal.TypeErr, rObj.Literal(), object.BOOLEAN),
+				internal.RuntimeErr))
 		default:
 			o = object.NewNull()
 		}
@@ -87,13 +90,11 @@ func (e *Evaluator) evaluatePrefixExpression(node ast.Node) (o object.Object) {
 
 		rObj := rObj.(*object.Boolean)
 		switch pExpr.Token.Type() {
-		case token.ADD:
-			o = object.NewNull()
-		case token.SUB:
-			o = object.NewNull()
 		case token.NEGATE:
 			o = object.NewBoolean(!rObj.Value)
 		default:
+			e.panic(internal.NewError(pExpr.Data(), fmt.Sprintf(internal.TypeErr, rObj.Literal(), object.INTEGER),
+				internal.RuntimeErr))
 			o = object.NewNull()
 		}
 
@@ -114,13 +115,17 @@ func (e *Evaluator) evaluateInfixExpression(node ast.Node) (o object.Object) {
 			lObj := lObj.(*object.Integer)
 			rObj := rObj.(*object.Integer)
 
+
 			switch iExpr.Token.Type() {
 			case token.ADD:
 				o = object.NewInteger(lObj.Value + rObj.Value)
 			case token.SUB:
 				o = object.NewInteger(lObj.Value - rObj.Value)
 			case token.DIV:
-				// check for zero division !! -----------------------------------------------
+				if rObj.Value == 0 {
+					e.panic(internal.NewError(iExpr.Data(), internal.DivisionByZeroErr, internal.RuntimeErr))
+				}
+
 				o = object.NewInteger(lObj.Value / rObj.Value)
 			case token.MULT:
 				o = object.NewInteger(lObj.Value * rObj.Value)
@@ -136,12 +141,9 @@ func (e *Evaluator) evaluateInfixExpression(node ast.Node) (o object.Object) {
 				o = object.NewBoolean(lObj.Value == rObj.Value)
 			case token.NEQUAL:
 				o = object.NewBoolean(lObj.Value != rObj.Value)
-			case token.AND:
-				o = object.NewBoolean(lObj.Value != 0 && rObj.Value != 0)
-			case token.OR:
-				o = object.NewBoolean(lObj.Value != 0 || rObj.Value != 0)
 			default:
-				// raise an error here!
+				e.panic(internal.NewError(iExpr.Data(), fmt.Sprintf(internal.TypeOperationErr, iExpr.Token.Type(), lObj.Type()),
+					internal.RuntimeErr))
 				o = object.NewNull()
 			}
 		} else {
@@ -157,12 +159,13 @@ func (e *Evaluator) evaluateInfixExpression(node ast.Node) (o object.Object) {
 			case token.OR:
 				o = object.NewBoolean(lObj.Value || rObj.Value)
 			default:
-				// raise an error here! -----------------------------------------------------
-				o = object.NewNull()
+				e.panic(internal.NewError(iExpr.Data(), fmt.Sprintf(internal.TypeOperationErr, iExpr.Token.Type(), lObj.Type()),
+					internal.RuntimeErr))
 			}
 		}
 	} else {
-		o = object.NewNull()
+		e.panic(internal.NewError(iExpr.Data(),fmt.Sprintf( internal.MismatchedTypeErr, lObj.Type(), rObj.Type()),
+			internal.RuntimeErr))
 	}
 
 	return
@@ -226,6 +229,8 @@ func (e *Evaluator) evaluateFunctionCallExpression(node ast.Node) (o object.Obje
 		e.symbolTable.ExitFunction()
 
 	}
+
+	e.stackTrace.Pop()
 	return o
 }
 
@@ -297,4 +302,16 @@ func (e *Evaluator) evaluateFunctionDeclarationStatement(node ast.Node) object.O
 	o := object.NewUserFunction(fDec.Name, paramNames, fDec.Body)
 	e.symbolTable.SetUserFunc(o)
 	return object.NewNull()
+}
+
+func (e *Evaluator) panic(err error) {
+	fmt.Println(err)
+
+	fmt.Println("\nstack trace ---------- ")
+	fCall, ok := e.stackTrace.Pop()
+	for  ok == true {
+		fmt.Println(fmt.Sprintf("FUNCTION CALL %v %v - %v", fCall.FileName(), fCall.LineNumber(), fCall.String()))
+		fCall, ok = e.stackTrace.Pop()
+	}
+	os.Exit(0)
 }

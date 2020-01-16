@@ -2,6 +2,26 @@ package object
 
 type ObjectType int
 
+func (oT ObjectType) String() string {
+	switch oT {
+	case INTEGER:
+		return "INTEGER"
+	case BOOLEAN:
+		return "BOOLEAN"
+	case RETURN:
+		return "RETURN"
+	case USER_FUNCTION:
+		return "USER FUNCTION"
+	case NATIVE_FUNCTION:
+		return "NATIVE FUNCTION"
+	case NULL:
+		return "NULL"
+	default:
+		return "<UNKNOWN TYPE>"
+
+	}
+}
+
 const (
 	INTEGER ObjectType = iota
 	BOOLEAN

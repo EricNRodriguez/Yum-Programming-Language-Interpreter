@@ -15,10 +15,10 @@ type Object interface {
 }
 
 type Integer struct {
-	Value int
+	Value int64
 }
 
-func NewInteger(i int) *Integer {
+func NewInteger(i int64) *Integer {
 	return &Integer{
 		Value: i,
 	}

@@ -1,12 +1,16 @@
-- semantic analysis
-
-- functions can be called with a differing number of parameters
+- implement runtime errors
 
 
-- func shit(b) {
-      print(3);
-      return 4; <- remove return and it crashes
-  };
+- support for float and string types
+- write test cases for everything
+- arrays and dictionaries
 
-  var y = shit(2);
+
+Design decision:
+- ignoring overflow errors
+
+ERRORS:
+1.
+    var x = y == 2;
+    SEMANTIC ERROR test_files/progressive.txt 2 | y already declared in current scope
 
