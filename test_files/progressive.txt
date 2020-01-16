@@ -17,7 +17,8 @@ var array = [y-3 * 4,2,3,4, 25.44];
 
 var secondOne = array[2];
 
-print(array[4] * 4);
+print(false * true);
+
 
 
 

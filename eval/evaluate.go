@@ -216,7 +216,8 @@ func (e *Evaluator) evaluateInfixExpression(node ast.Node) (o object.Object) {
 		}
 
 	} else {
-		e.panic(internal.NewError(iExpr.Data(), fmt.Sprintf(internal.MismatchedTypeErr, lObj.Type(), rObj.Type()),
+		e.panic(internal.NewError(iExpr.Data(), fmt.Sprintf(internal.TypeOperationErr, iExpr.Literal(),
+			fmt.Sprintf("%v and %v", lObj.Type(), rObj.Type())),
 			internal.RuntimeErr))
 	}
 

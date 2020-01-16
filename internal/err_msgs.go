@@ -20,7 +20,6 @@ const (
 	// runtime errors
 	DivisionByZeroErr = "division by zero"
 	TypeErr           = "%v not of type %v"
-	MismatchedTypeErr = "mismatched types %v and %v"
 	TypeOperationErr  = "operation %v not available for type %v"
 	IndexOutOfBoundsErr = "index out of bounds"
 
