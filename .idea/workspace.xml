@@ -2,9 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="6ea6d2c6-c076-4c0f-aa3f-8129c1521d69" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/eval/evaluate.go" beforeDir="false" afterPath="$PROJECT_DIR$/eval/evaluate.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/err_msgs.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/err_msgs.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test_files/progressive.txt" beforeDir="false" afterPath="$PROJECT_DIR$/test_files/progressive.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/todo.txt" beforeDir="false" afterPath="$PROJECT_DIR$/todo.txt" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -89,20 +87,20 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/token/metadata.go">
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/todo.txt">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="126">
-              <caret line="9" column="21" selection-start-line="9" selection-start-column="21" selection-end-line="9" selection-end-column="21" />
+            <state relative-caret-position="210">
+              <caret line="15" lean-forward="true" selection-start-line="15" selection-end-line="15" />
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/internal/err_msgs.go">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="308">
-              <caret line="22" selection-start-line="22" selection-end-line="22" />
+            <state relative-caret-position="392">
+              <caret line="28" lean-forward="true" selection-start-line="28" selection-end-line="28" />
             </state>
           </provider>
         </entry>
@@ -200,11 +198,11 @@
         <option value="$PROJECT_DIR$/parser/pratt_parser.go" />
         <option value="$PROJECT_DIR$/object/object_types.go" />
         <option value="$PROJECT_DIR$/ast/node_type.go" />
-        <option value="$PROJECT_DIR$/todo.txt" />
         <option value="$PROJECT_DIR$/object/object.go" />
         <option value="$PROJECT_DIR$/eval/evaluate.go" />
         <option value="$PROJECT_DIR$/test_files/progressive.txt" />
         <option value="$PROJECT_DIR$/internal/err_msgs.go" />
+        <option value="$PROJECT_DIR$/todo.txt" />
       </list>
     </option>
   </component>
@@ -643,13 +641,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/todo.txt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="336">
-          <caret line="24" lean-forward="true" selection-start-line="24" selection-end-line="24" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/object/native_functions.go">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="196">
@@ -760,8 +751,15 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/internal/err_msgs.go">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="308">
-          <caret line="22" selection-start-line="22" selection-end-line="22" />
+        <state relative-caret-position="392">
+          <caret line="28" lean-forward="true" selection-start-line="28" selection-end-line="28" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/todo.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="210">
+          <caret line="15" lean-forward="true" selection-start-line="15" selection-end-line="15" />
         </state>
       </provider>
     </entry>
