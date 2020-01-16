@@ -30,6 +30,7 @@ func NewEvaluator() (e *Evaluator) {
 		ast.PREFIX_EXPRESSION:              e.evaluatePrefixExpression,
 		ast.INFIX_EXPRESSION:               e.evaluateInfixExpression,
 		ast.INTEGER_EXPRESSION:             e.evaluateIntegerExpression,
+		ast.FLOATING_POINT_EXPRESSION: e.evaluateFloatingPointExpression,
 		ast.BOOLEAN_EXPRESSION:             e.evaluateBooleanExpression,
 		ast.FUNC_CALL_EXPRESSION:           e.evaluateFunctionCallExpression,
 		ast.IDENTIFIER_EXPRESSION:          e.evaluateIdentifierExpression,
@@ -48,6 +49,8 @@ func (e *Evaluator) Evaluate(node ast.Node) (o object.Object) {
 	if method, ok := e.methodRouter[node.Type()]; ok {
 		return method(node)
 	}
+	e.panic(internal.NewError(token.NewMetatadata(node.LineNumber(), node.FileName()),
+		fmt.Sprintf(internal.UnimplementedType, node.Type()), internal.InternalErr))
 	return nil
 }
 
@@ -72,8 +75,8 @@ func (e *Evaluator) evaluatePrefixExpression(node ast.Node) (o object.Object) {
 	rObj := e.Evaluate(pExpr.Expression)
 
 	if rObj.Type() == object.INTEGER {
-
 		rObj := rObj.(*object.Integer)
+
 		switch pExpr.Token.Type() {
 		case token.ADD:
 			o = rObj
@@ -86,6 +89,20 @@ func (e *Evaluator) evaluatePrefixExpression(node ast.Node) (o object.Object) {
 			o = object.NewNull()
 		}
 
+	} else if rObj.Type() == object.FLOAT {
+		rObj := rObj.(*object.Float)
+
+		switch pExpr.Token.Type() {
+		case token.ADD:
+			o = rObj
+		case token.SUB:
+			o = object.NewFloat(-1 * rObj.Value)
+		case token.NEGATE:
+			e.panic(internal.NewError(pExpr.Data(), fmt.Sprintf(internal.TypeErr, rObj.Literal(), object.BOOLEAN),
+				internal.RuntimeErr))
+		default:
+			o = object.NewNull()
+		}
 	} else if rObj.Type() == object.BOOLEAN {
 
 		rObj := rObj.(*object.Boolean)
@@ -110,11 +127,10 @@ func (e *Evaluator) evaluateInfixExpression(node ast.Node) (o object.Object) {
 	lObj := e.unpack(e.Evaluate(iExpr.LeftExpression))
 	rObj := e.unpack(e.Evaluate(iExpr.RightExpression))
 
-	if lObj.Type() == rObj.Type() {
+	if lObj.Type() == object.INTEGER && rObj.Type() == object.INTEGER {
 		if lObj.Type() == object.INTEGER {
 			lObj := lObj.(*object.Integer)
 			rObj := rObj.(*object.Integer)
-
 
 			switch iExpr.Token.Type() {
 			case token.ADD:
@@ -142,8 +158,8 @@ func (e *Evaluator) evaluateInfixExpression(node ast.Node) (o object.Object) {
 			case token.NEQUAL:
 				o = object.NewBoolean(lObj.Value != rObj.Value)
 			default:
-				e.panic(internal.NewError(iExpr.Data(), fmt.Sprintf(internal.TypeOperationErr, iExpr.Token.Type(), lObj.Type()),
-					internal.RuntimeErr))
+				e.panic(internal.NewError(iExpr.Data(), fmt.Sprintf(internal.TypeOperationErr, iExpr.Token.Type(),
+					lObj.Type()), internal.RuntimeErr))
 				o = object.NewNull()
 			}
 		} else {
@@ -159,16 +175,65 @@ func (e *Evaluator) evaluateInfixExpression(node ast.Node) (o object.Object) {
 			case token.OR:
 				o = object.NewBoolean(lObj.Value || rObj.Value)
 			default:
-				e.panic(internal.NewError(iExpr.Data(), fmt.Sprintf(internal.TypeOperationErr, iExpr.Token.Type(), lObj.Type()),
-					internal.RuntimeErr))
+				e.panic(internal.NewError(iExpr.Data(), fmt.Sprintf(internal.TypeOperationErr, iExpr.Token.Type(),
+					lObj.Type()), internal.RuntimeErr))
 			}
 		}
+	} else if (lObj.Type() == object.INTEGER || lObj.Type() == object.FLOAT) &&
+		(rObj.Type() == object.INTEGER || rObj.Type() == object.FLOAT) {
+
+		// type cast to floating point numbers
+		lObj := e.castToFloat(lObj)
+		rObj := e.castToFloat(rObj)
+
+		switch iExpr.Token.Type() {
+		case token.ADD:
+			o = object.NewFloat(lObj.Value + rObj.Value)
+		case token.SUB:
+			o = object.NewFloat(lObj.Value - rObj.Value)
+		case token.DIV:
+			if rObj.Value == 0 {
+				e.panic(internal.NewError(iExpr.Data(), internal.DivisionByZeroErr, internal.RuntimeErr))
+			}
+
+			o = object.NewFloat(lObj.Value / rObj.Value)
+		case token.MULT:
+			o = object.NewFloat(lObj.Value * rObj.Value)
+		case token.GTHAN:
+			o = object.NewBoolean(lObj.Value > rObj.Value)
+		case token.LTHAN:
+			o = object.NewBoolean(lObj.Value < rObj.Value)
+		case token.GTEQUAL:
+			o = object.NewBoolean(lObj.Value >= rObj.Value)
+		case token.LTEQUAL:
+			o = object.NewBoolean(lObj.Value <= rObj.Value)
+		case token.EQUAL:
+			o = object.NewBoolean(lObj.Value == rObj.Value)
+		case token.NEQUAL:
+			o = object.NewBoolean(lObj.Value != rObj.Value)
+		default:
+			e.panic(internal.NewError(iExpr.Data(), fmt.Sprintf(internal.TypeOperationErr, iExpr.Token.Type(),
+				lObj.Type()), internal.RuntimeErr))
+			o = object.NewNull()
+		}
+
+
+
 	} else {
 		e.panic(internal.NewError(iExpr.Data(),fmt.Sprintf( internal.MismatchedTypeErr, lObj.Type(), rObj.Type()),
 			internal.RuntimeErr))
 	}
 
 	return
+}
+
+// must receive either an integer or a float, will panic otherwise
+func (e *Evaluator) castToFloat(obj object.Object) (o *object.Float) {
+	var ok bool
+	if o, ok = obj.(*object.Float); !ok {
+		o = object.NewFloat(float64(obj.(*object.Integer).Value))
+	}
+	return o
 }
 
 func (e *Evaluator) unpack(o object.Object) object.Object {
@@ -182,6 +247,12 @@ func (e *Evaluator) unpack(o object.Object) object.Object {
 func (e *Evaluator) evaluateIntegerExpression(node ast.Node) object.Object {
 	i := node.(*ast.IntegerExpression)
 	o := object.NewInteger(i.Value)
+	return o
+}
+
+func (e *Evaluator) evaluateFloatingPointExpression(node ast.Node) object.Object {
+	i := node.(*ast.FloatingPointExpression)
+	o := object.NewFloat(i.Value)
 	return o
 }
 
@@ -310,7 +381,8 @@ func (e *Evaluator) panic(err error) {
 	fmt.Println("\nstack trace ---------- ")
 	fCall, ok := e.stackTrace.Pop()
 	for  ok == true {
-		fmt.Println(fmt.Sprintf("FUNCTION CALL %v %v - %v", fCall.FileName(), fCall.LineNumber(), fCall.String()))
+		fmt.Println(fmt.Sprintf("FUNCTION CALL %v %v - %v", fCall.FileName(), fCall.LineNumber(),
+			fCall.String()))
 		fCall, ok = e.stackTrace.Pop()
 	}
 	os.Exit(0)

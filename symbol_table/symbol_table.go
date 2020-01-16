@@ -75,12 +75,6 @@ func (st *symbolTable) GetVar(name string) (o object.Object, ok bool) {
 		}
 		s--
 	}
-	//o, ok = st.nameSpace[st.scope][name]
-	//s := st.scope + 1
-	//for s >= 0 && !ok {
-	//	o, ok = st.nameSpace[s][name]
-	//	s++
-	//}
 	return
 }
 

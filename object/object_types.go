@@ -16,6 +16,8 @@ func (oT ObjectType) String() string {
 		return "NATIVE FUNCTION"
 	case NULL:
 		return "NULL"
+	case FLOAT:
+		return "FLOAT"
 	default:
 		return "<UNKNOWN TYPE>"
 
@@ -24,6 +26,7 @@ func (oT ObjectType) String() string {
 
 const (
 	INTEGER ObjectType = iota
+	FLOAT
 	BOOLEAN
 	RETURN
 	USER_FUNCTION

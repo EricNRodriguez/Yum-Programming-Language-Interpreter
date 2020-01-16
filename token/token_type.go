@@ -47,5 +47,6 @@ const (
 
 	IDEN    TokenType = "IDENTIFIER"
 	INT     TokenType = "INT"
+	FLOAT   TokenType = "FLOAT"
 	BOOLEAN TokenType = "BOOL"
 )

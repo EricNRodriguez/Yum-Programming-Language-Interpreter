@@ -4,6 +4,8 @@ import (
 	"Yum-Programming-Language-Interpreter/internal"
 	"Yum-Programming-Language-Interpreter/token"
 	"bufio"
+	"bytes"
+	"fmt"
 	"io"
 	"os"
 )
@@ -73,13 +75,24 @@ func (l *lexer) readIdentifier() (idt []byte) {
 	return
 }
 
-func (l *lexer) readNumber() (num []byte) {
-	num = make([]byte, 0)
+func (l *lexer) readInt() string {
 	// [0-9]
+	numBuff := bytes.Buffer{}
 	for l.currentLineIndex < len(l.currentLine) && l.currentLine[l.currentLineIndex] >= 48 &&
 		l.currentLine[l.currentLineIndex] <= 57 {
-		num = append(num, l.currentLine[l.currentLineIndex])
+		numBuff.WriteString(string(l.currentLine[l.currentLineIndex]))
 		l.currentLineIndex++
+	}
+	return numBuff.String()
+}
+
+func (l *lexer) readNumber() (num string, ty token.TokenType) {
+	num = l.readInt()
+	ty = token.INT
+	if l.currentLine[l.currentLineIndex] == 46 {
+		l.currentLineIndex++
+		num = fmt.Sprintf("%v.%v", num, l.readInt())
+		ty = token.FLOAT
 	}
 	return
 }
@@ -216,8 +229,8 @@ func (l *lexer) NextToken() (t token.Token, err error) {
 
 			// [0,9]
 		} else if l.currentLine[l.currentLineIndex] >= 48 && l.currentLine[l.currentLineIndex] <= 57 {
-			num := l.readNumber()
-			t = token.NewToken(token.INT, string(num), l.currentLineNumber, l.fileName)
+			numStr, ty := l.readNumber()
+			t = token.NewToken(ty, numStr, l.currentLineNumber, l.fileName)
 
 		} else {
 			l.currentLineIndex++

@@ -23,6 +23,9 @@ const (
 	MismatchedTypeErr = "mismatched types %v and %v"
 	TypeOperationErr = "operation %v not available for type %v"
 
+	// internal error
+	UnimplementedType = "parse function not implemented for type %v"
+
 
 
 )

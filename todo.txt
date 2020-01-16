@@ -1,7 +1,6 @@
-- implement runtime errors
 
 
-- support for float and string types
+- support for string types
 - write test cases for everything
 - arrays and dictionaries
 

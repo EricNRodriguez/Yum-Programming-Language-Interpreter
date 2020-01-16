@@ -81,6 +81,7 @@ func newPrattParser(l lexer.Lexer) (prattParserInterface, error) {
 	nMs[token.SUB] = pp.parsePrefixOperator
 	nMs[token.NEGATE] = pp.parsePrefixOperator
 	nMs[token.INT] = pp.parseInteger
+	nMs[token.FLOAT] = pp.parseFloatingPointNumber
 	nMs[token.IDEN] = pp.parseIdent
 	nMs[token.BOOLEAN] = pp.parseBoolean
 	nMs[token.LPAREN] = pp.parseGroupExpression
@@ -154,7 +155,7 @@ func (pp *prattParser) parseInteger() (expr ast.Expression) {
 
 	// convert string literal to int
 	if i, err = strconv.ParseInt(pp.currentToken().Literal(), 10, 64); err != nil {
-		errMsg := fmt.Sprintf(internal.InvalidInfixOperatorErr, pp.currentToken().Literal())
+		errMsg := fmt.Sprintf(internal.TypeErr, pp.currentToken().Literal(), token.INT)
 		pp.recordError(internal.NewError(pp.currentToken().Data(), errMsg, internal.SyntaxErr))
 		pp.progressToNextSemicolon() // move to next statement and continue
 		return
@@ -162,6 +163,27 @@ func (pp *prattParser) parseInteger() (expr ast.Expression) {
 
 	expr = ast.NewIntegerExpression(pp.currentToken(), i)
 	pp.consume(1) // consume int
+
+	return
+}
+
+
+func (pp *prattParser) parseFloatingPointNumber() (expr ast.Expression) {
+	var (
+		i   float64
+		err error
+	)
+
+	// convert string literal to int
+	if i, err = strconv.ParseFloat(pp.currentToken().Literal(), 10); err != nil {
+		errMsg := fmt.Sprintf(internal.TypeErr, pp.currentToken().Literal(), token.FLOAT)
+		pp.recordError(internal.NewError(pp.currentToken().Data(), errMsg, internal.SyntaxErr))
+		pp.progressToNextSemicolon() // move to next statement and continue
+		return
+	}
+
+	expr = ast.NewFloatingPointExpression(pp.currentToken(), i)
+	pp.consume(1) // consume float
 
 	return
 }

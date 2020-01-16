@@ -75,6 +75,33 @@ func (ie *IntegerExpression) Type() NodeType {
 
 func (ie *IntegerExpression) expressionFunction() {}
 
+
+type FloatingPointExpression struct {
+	token.Metadata
+	Value float64
+}
+
+func NewFloatingPointExpression(t token.Token, i float64) *FloatingPointExpression {
+	return &FloatingPointExpression{
+		Metadata: t.Data(),
+		Value:    i,
+	}
+}
+
+
+func (fpe *FloatingPointExpression) String() string {
+	return fmt.Sprintf("%f", fpe.Value)
+}
+
+
+func (fpe *FloatingPointExpression) Type() NodeType {
+	return FLOATING_POINT_EXPRESSION
+}
+
+func (fpe *FloatingPointExpression) expressionFunction() {}
+
+
+
 type BooleanExpression struct {
 	token.Metadata
 	Value bool

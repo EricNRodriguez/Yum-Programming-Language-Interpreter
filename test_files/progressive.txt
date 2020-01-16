@@ -1,4 +1,5 @@
 func hello(a,b) {
+    var y = a * b;
     print(a - b);
 };
 
@@ -7,7 +8,11 @@ func she(a,b) {
     return hello(a,b);
 };
 
-var x = she(true, false);
+var y = 22.33;
+
+print(y);
+
+print(y + 3);
 
 
 

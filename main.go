@@ -28,18 +28,25 @@ func main() {
 		os.Exit(1)
 	}
 
+
 	prog := p.Parse()
 
 	sA := semantic.NewSemanticAnalyser()
+
 	sA.Analyse(prog)
+
 	for _, e := range sA.SemanticErrors() {
 		fmt.Println(e)
 	}
+
 
 	//fmt.Println(prog.String())
 	evalu := eval.NewEvaluator()
 	if len(sA.SemanticErrors()) == 0 {
 		evalu.Evaluate(prog)
 	}
+
+
+
 
 }
