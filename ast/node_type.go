@@ -32,6 +32,8 @@ func (nt NodeType) String() string {
 		return "ASSIGNMENT STATEMENT"
 	case RETURN_STATEMENT:
 		return "RETURN STATEMENT"
+	case ARRAY:
+		return "ARRAY"
 	case IF_STATEMENT:
 		return "IF STATEMENT"
 	default:
@@ -42,7 +44,8 @@ func (nt NodeType) String() string {
 
 const (
 	PROGRAM    NodeType = iota
-	IDENTIFIER          // should delete and just use identifier expression !
+	IDENTIFIER
+	ARRAY
 	PREFIX_EXPRESSION
 	INFIX_EXPRESSION
 	INTEGER_EXPRESSION

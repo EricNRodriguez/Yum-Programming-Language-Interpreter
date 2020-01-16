@@ -239,7 +239,7 @@ func (rdp *RecursiveDescentParser) parseFuncDeclarationStatement() (stmt ast.Sta
 	iden = rdp.currentToken().Literal()
 	rdp.consume(1) // consume function name
 
-	ps := rdp.parseParameters()
+	ps := rdp.parseParameters(false)
 	params = make([]ast.Identifier, len(ps))
 	for i, p := range ps {
 		if p.Type() != ast.IDENTIFIER_EXPRESSION {

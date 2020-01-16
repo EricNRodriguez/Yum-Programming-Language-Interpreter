@@ -48,7 +48,7 @@ var (
 
 type prattParserInterface interface {
 	parseExpression(precedence operatorPrecedence) ast.Expression
-	parseParameters() []ast.Expression
+	parseParameters(bool) []ast.Expression
 	parserDataInterface
 }
 
@@ -85,6 +85,7 @@ func newPrattParser(l lexer.Lexer) (prattParserInterface, error) {
 	nMs[token.IDEN] = pp.parseIdent
 	nMs[token.BOOLEAN] = pp.parseBoolean
 	nMs[token.LPAREN] = pp.parseGroupExpression
+	nMs[token.LBRACKET] = pp.parseArrayDeclaration
 
 	// initialise led methods
 	lMs[token.ADD] = pp.parseInfixOperator
@@ -138,6 +139,18 @@ func (pp *prattParser) currentPrecedence() operatorPrecedence {
 	return MINPRECEDENCE
 }
 
+func (pp *prattParser) parseArrayDeclaration() ast.Expression {
+	md := pp.currentToken().Data()
+
+	expressionArray := pp.parseParameters(true)
+	if expressionArray == nil {
+		pp.progressToNextSemicolon()
+		return nil
+	}
+
+	return ast.NewArray(md, expressionArray)
+}
+
 func (pp *prattParser) parsePrefixOperator() (expr ast.Expression) {
 	prefixOperatorToken := pp.currentToken()
 	pp.consume(1)
@@ -167,7 +180,6 @@ func (pp *prattParser) parseInteger() (expr ast.Expression) {
 	return
 }
 
-
 func (pp *prattParser) parseFloatingPointNumber() (expr ast.Expression) {
 	var (
 		i   float64
@@ -188,21 +200,30 @@ func (pp *prattParser) parseFloatingPointNumber() (expr ast.Expression) {
 	return
 }
 
-func (pp *prattParser) parseParameters() (parameters []ast.Expression) {
+// useBrackets false for (), true for []
+func (pp *prattParser) parseParameters(useBrackets bool) (parameters []ast.Expression) {
 	parameters = make([]ast.Expression, 0)
 
-	if pp.currentToken().Type() != token.LPAREN {
-		errMsg := fmt.Sprintf(internal.InvalidTokenErr, token.LPAREN, pp.currentToken().Literal())
+	sToken := token.LPAREN
+	eToken := token.RPAREN
+	if useBrackets {
+		sToken = token.LBRACKET
+		eToken = token.RBRACKET
+	}
+
+
+	if pp.currentToken().Type() != sToken {
+		errMsg := fmt.Sprintf(internal.InvalidTokenErr, sToken, pp.currentToken().Literal())
 		pp.recordError(internal.NewError(pp.currentToken().Data(), errMsg, internal.SyntaxErr))
 		parameters = nil
 		return
 	}
 	pp.consume(1)
 
-	for pp.currentToken().Type() != token.RPAREN && pp.currentToken().Type() != token.EOF {
+	for pp.currentToken().Type() != eToken && pp.currentToken().Type() != token.EOF {
 		parameters = append(parameters, pp.parseExpression(MINPRECEDENCE))
 
-		if pp.currentToken().Type() != token.RPAREN {
+		if pp.currentToken().Type() != eToken {
 
 			if pp.currentToken().Type() != token.COMMA {
 				errMsg := fmt.Sprintf(internal.InvalidTokenErr, ",", pp.currentToken().Literal())
@@ -215,6 +236,12 @@ func (pp *prattParser) parseParameters() (parameters []ast.Expression) {
 		}
 	}
 
+	if pp.currentToken().Type() != eToken {
+		errMsg := fmt.Sprintf(internal.InvalidTokenErr, eToken, pp.currentToken().Literal())
+		pp.recordError(internal.NewError(pp.currentToken().Data(), errMsg, internal.SyntaxErr))
+		parameters = nil
+	}
+
 	pp.consume(1) // consume right paren
 	return
 }
@@ -225,9 +252,10 @@ func (pp *prattParser) parseIdent() (expr ast.Expression) {
 	if pp.peekToken().Type() == token.LPAREN {
 		idenToken := pp.currentToken()
 		pp.consume(1)
-		if params := pp.parseParameters(); params != nil {
+		if params := pp.parseParameters(false); params != nil {
 			expr = ast.NewFunctionCallExpression(idenToken.Data(), idenToken.Literal(), params...)
 		} else {
+			expr = ast.NewFunctionCallExpression(idenToken.Data(), idenToken.Literal(), nil)
 			pp.progressToNextSemicolon()
 			return
 		}
@@ -255,7 +283,7 @@ func (pp *prattParser) parseGroupExpression() (expr ast.Expression) {
 	if pp.currentToken().Type() != token.RPAREN {
 		errMsg := fmt.Sprintf(internal.InvalidTokenErr, token.RPAREN, pp.currentToken().Literal())
 		pp.recordError(internal.NewError(pp.currentToken().Data(), errMsg, internal.SyntaxErr))
-		//pp.consumeCurrentStatement()
+		pp.progressToNextSemicolon()
 		return nil
 	}
 	pp.consume(1)

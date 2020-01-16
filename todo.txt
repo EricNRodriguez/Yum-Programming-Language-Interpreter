@@ -1,3 +1,8 @@
+CURRENTLY:
+- array declaration implemented
+- array indexing and append NOT DONE
+
+
 
 
 - support for string types

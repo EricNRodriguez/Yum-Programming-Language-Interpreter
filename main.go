@@ -28,7 +28,6 @@ func main() {
 		os.Exit(1)
 	}
 
-
 	prog := p.Parse()
 
 	sA := semantic.NewSemanticAnalyser()
@@ -39,14 +38,10 @@ func main() {
 		fmt.Println(e)
 	}
 
-
 	//fmt.Println(prog.String())
 	evalu := eval.NewEvaluator()
 	if len(sA.SemanticErrors()) == 0 {
 		evalu.Evaluate(prog)
 	}
-
-
-
 
 }

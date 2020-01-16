@@ -30,7 +30,7 @@ func NewEvaluator() (e *Evaluator) {
 		ast.PREFIX_EXPRESSION:              e.evaluatePrefixExpression,
 		ast.INFIX_EXPRESSION:               e.evaluateInfixExpression,
 		ast.INTEGER_EXPRESSION:             e.evaluateIntegerExpression,
-		ast.FLOATING_POINT_EXPRESSION: e.evaluateFloatingPointExpression,
+		ast.FLOATING_POINT_EXPRESSION:      e.evaluateFloatingPointExpression,
 		ast.BOOLEAN_EXPRESSION:             e.evaluateBooleanExpression,
 		ast.FUNC_CALL_EXPRESSION:           e.evaluateFunctionCallExpression,
 		ast.IDENTIFIER_EXPRESSION:          e.evaluateIdentifierExpression,
@@ -82,11 +82,9 @@ func (e *Evaluator) evaluatePrefixExpression(node ast.Node) (o object.Object) {
 			o = rObj
 		case token.SUB:
 			o = object.NewInteger(-1 * rObj.Value)
-		case token.NEGATE:
+		default:
 			e.panic(internal.NewError(pExpr.Data(), fmt.Sprintf(internal.TypeErr, rObj.Literal(), object.BOOLEAN),
 				internal.RuntimeErr))
-		default:
-			o = object.NewNull()
 		}
 
 	} else if rObj.Type() == object.FLOAT {
@@ -97,11 +95,9 @@ func (e *Evaluator) evaluatePrefixExpression(node ast.Node) (o object.Object) {
 			o = rObj
 		case token.SUB:
 			o = object.NewFloat(-1 * rObj.Value)
-		case token.NEGATE:
+		default:
 			e.panic(internal.NewError(pExpr.Data(), fmt.Sprintf(internal.TypeErr, rObj.Literal(), object.BOOLEAN),
 				internal.RuntimeErr))
-		default:
-			o = object.NewNull()
 		}
 	} else if rObj.Type() == object.BOOLEAN {
 
@@ -110,14 +106,14 @@ func (e *Evaluator) evaluatePrefixExpression(node ast.Node) (o object.Object) {
 		case token.NEGATE:
 			o = object.NewBoolean(!rObj.Value)
 		default:
-			e.panic(internal.NewError(pExpr.Data(), fmt.Sprintf(internal.TypeErr, rObj.Literal(), object.INTEGER),
-				internal.RuntimeErr))
-			o = object.NewNull()
+			e.panic(internal.NewError(pExpr.Data(), fmt.Sprintf(internal.TypeErr, rObj.Literal(),
+				fmt.Sprintf("%v or %v", object.INTEGER, object.FLOAT)), internal.RuntimeErr))
 		}
 
 	} else {
 		// null object
-		o = object.NewNull()
+		e.panic(internal.NewError(pExpr.Data(), fmt.Sprintf(internal.TypeErr, rObj.Literal(),
+			fmt.Sprintf("%v or %v or %v", object.INTEGER, object.FLOAT, object.BOOLEAN)), internal.RuntimeErr))
 	}
 	return
 }
@@ -217,10 +213,8 @@ func (e *Evaluator) evaluateInfixExpression(node ast.Node) (o object.Object) {
 			o = object.NewNull()
 		}
 
-
-
 	} else {
-		e.panic(internal.NewError(iExpr.Data(),fmt.Sprintf( internal.MismatchedTypeErr, lObj.Type(), rObj.Type()),
+		e.panic(internal.NewError(iExpr.Data(), fmt.Sprintf(internal.MismatchedTypeErr, lObj.Type(), rObj.Type()),
 			internal.RuntimeErr))
 	}
 
@@ -380,7 +374,7 @@ func (e *Evaluator) panic(err error) {
 
 	fmt.Println("\nstack trace ---------- ")
 	fCall, ok := e.stackTrace.Pop()
-	for  ok == true {
+	for ok == true {
 		fmt.Println(fmt.Sprintf("FUNCTION CALL %v %v - %v", fCall.FileName(), fCall.LineNumber(),
 			fCall.String()))
 		fCall, ok = e.stackTrace.Pop()

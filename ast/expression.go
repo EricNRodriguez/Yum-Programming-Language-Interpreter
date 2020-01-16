@@ -2,6 +2,7 @@ package ast
 
 import (
 	"Yum-Programming-Language-Interpreter/token"
+	"bytes"
 	"fmt"
 	"strconv"
 	"strings"
@@ -75,7 +76,6 @@ func (ie *IntegerExpression) Type() NodeType {
 
 func (ie *IntegerExpression) expressionFunction() {}
 
-
 type FloatingPointExpression struct {
 	token.Metadata
 	Value float64
@@ -88,19 +88,15 @@ func NewFloatingPointExpression(t token.Token, i float64) *FloatingPointExpressi
 	}
 }
 
-
 func (fpe *FloatingPointExpression) String() string {
 	return fmt.Sprintf("%f", fpe.Value)
 }
-
 
 func (fpe *FloatingPointExpression) Type() NodeType {
 	return FLOATING_POINT_EXPRESSION
 }
 
 func (fpe *FloatingPointExpression) expressionFunction() {}
-
-
 
 type BooleanExpression struct {
 	token.Metadata
@@ -174,3 +170,35 @@ func expressionArrayToString(staArr []Expression) string {
 	}
 	return strings.Join(strArr, ", ")
 }
+
+
+type ArrayExpression struct {
+	token.Metadata
+	Data []Expression
+	Length int
+}
+
+func NewArray(md token.Metadata, data []Expression) *ArrayExpression {
+	return &ArrayExpression{
+		Metadata: md,
+		Data: data,
+		Length: len(data),
+	}
+}
+
+func (a *ArrayExpression) String() string {
+	buff := bytes.Buffer{}
+	buff.WriteString("[")
+	for _, e := range a.Data {
+		buff.WriteString(e.String())
+	}
+	buff.WriteString("]")
+	return buff.String()
+}
+
+func (a *ArrayExpression) Type() NodeType {
+	return ARRAY
+}
+
+func (a *ArrayExpression) expressionFunction() {}
+

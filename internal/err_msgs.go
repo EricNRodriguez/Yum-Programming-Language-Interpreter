@@ -2,12 +2,12 @@ package internal
 
 const (
 	// syntax errors
-	InvalidTokenErr                  = "expected %v, received %v"
-	InvalidPrefixOperatorErr         = "%v is not a valid prefix operator"
-	InvalidInfixOperatorErr          = "%v is not a valid infix operator"
-	ErrEmptyFile                     = "program file is empty"
-	ErrInitParser                    = "unable to initialise parser"
-	ErrInvalidStatement              = "invalid statement beginning with %v"
+	InvalidTokenErr          = "expected %v, received %v"
+	InvalidPrefixOperatorErr = "%v is not a valid prefix operator"
+	InvalidInfixOperatorErr  = "%v is not a valid infix operator"
+	ErrEmptyFile             = "program file is empty"
+	ErrInitParser            = "unable to initialise parser"
+	ErrInvalidStatement      = "invalid statement beginning with %v"
 
 	// semantic errors
 	DeclaredVariableErr              = "%v already declared in current scope"
@@ -19,13 +19,10 @@ const (
 
 	// runtime errors
 	DivisionByZeroErr = "division by zero"
-	TypeErr                          = "%v not of type %v"
+	TypeErr           = "%v not of type %v"
 	MismatchedTypeErr = "mismatched types %v and %v"
-	TypeOperationErr = "operation %v not available for type %v"
+	TypeOperationErr  = "operation %v not available for type %v"
 
 	// internal error
-	UnimplementedType = "parse function not implemented for type %v"
-
-
-
+	UnimplementedType = "unable to evaluate type %v"
 )
