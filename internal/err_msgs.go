@@ -22,6 +22,7 @@ const (
 	TypeErr           = "%v not of type %v"
 	MismatchedTypeErr = "mismatched types %v and %v"
 	TypeOperationErr  = "operation %v not available for type %v"
+	IndexOutOfBoundsErr = "index out of bounds"
 
 	// internal error
 	UnimplementedType = "unable to evaluate type %v"

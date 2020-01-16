@@ -10,7 +10,7 @@ type Program struct {
 	Statements []Statement
 }
 
-func NewProgram(m token.Metadata, s ...Statement) Node {
+func NewProgram(m token.Metadata, s ...Statement) *Program {
 	return &Program{
 		Metadata:   m,
 		Statements: s,

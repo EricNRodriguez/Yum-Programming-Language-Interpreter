@@ -34,6 +34,8 @@ func (nt NodeType) String() string {
 		return "RETURN STATEMENT"
 	case ARRAY:
 		return "ARRAY"
+	case ARRAY_INDEX_EXPRESSION:
+		return "ARRAY INDEX EXPRESSION"
 	case IF_STATEMENT:
 		return "IF STATEMENT"
 	default:
@@ -43,9 +45,10 @@ func (nt NodeType) String() string {
 }
 
 const (
-	PROGRAM    NodeType = iota
+	PROGRAM NodeType = iota
 	IDENTIFIER
 	ARRAY
+	ARRAY_INDEX_EXPRESSION
 	PREFIX_EXPRESSION
 	INFIX_EXPRESSION
 	INTEGER_EXPRESSION

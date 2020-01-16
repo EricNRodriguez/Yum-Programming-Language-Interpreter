@@ -171,26 +171,28 @@ func expressionArrayToString(staArr []Expression) string {
 	return strings.Join(strArr, ", ")
 }
 
-
 type ArrayExpression struct {
 	token.Metadata
-	Data []Expression
+	Data   []Expression
 	Length int
 }
 
 func NewArray(md token.Metadata, data []Expression) *ArrayExpression {
 	return &ArrayExpression{
 		Metadata: md,
-		Data: data,
-		Length: len(data),
+		Data:     data,
+		Length:   len(data),
 	}
 }
 
 func (a *ArrayExpression) String() string {
 	buff := bytes.Buffer{}
 	buff.WriteString("[")
-	for _, e := range a.Data {
+	for i, e := range a.Data {
 		buff.WriteString(e.String())
+		if i != len(a.Data)-1 {
+			buff.WriteString(",")
+		}
 	}
 	buff.WriteString("]")
 	return buff.String()
@@ -202,3 +204,26 @@ func (a *ArrayExpression) Type() NodeType {
 
 func (a *ArrayExpression) expressionFunction() {}
 
+type ArrayIndexExpression struct {
+	token.Metadata
+	ArrayName string
+	IndexExpr Expression
+}
+
+func NewArrayIndexExpression(md token.Metadata, n string, e Expression) *ArrayIndexExpression {
+	return &ArrayIndexExpression{
+		Metadata: md,
+		ArrayName: n,
+		IndexExpr: e,
+	}
+}
+
+func (a *ArrayIndexExpression) String() string {
+	return fmt.Sprintf("%v[%v];", a.ArrayName, a.IndexExpr)
+}
+
+func (a *ArrayIndexExpression) Type() NodeType {
+	return ARRAY_INDEX_EXPRESSION
+}
+
+func (a *ArrayIndexExpression) expressionFunction() {}

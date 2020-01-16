@@ -18,3 +18,7 @@ ERRORS:
     var x = y == 2;
     SEMANTIC ERROR test_files/progressive.txt 2 | y already declared in current scope
 
+2.
+    print(array * array);
+    RUNTIME ERROR test_files/progressive.txt 20 | mismatched types ARRAY and ARRAY
+

@@ -27,6 +27,8 @@ func NewEvaluator() (e *Evaluator) {
 	e.methodRouter = map[ast.NodeType]evalMethod{
 		ast.PROGRAM:                        e.evaluateProgram,
 		ast.IDENTIFIER:                     e.evaluateIdentifier,
+		ast.ARRAY:                          e.evaluateArrayExpression,
+		ast.ARRAY_INDEX_EXPRESSION: e.evaluateArrayIndexExpression,
 		ast.PREFIX_EXPRESSION:              e.evaluatePrefixExpression,
 		ast.INFIX_EXPRESSION:               e.evaluateInfixExpression,
 		ast.INTEGER_EXPRESSION:             e.evaluateIntegerExpression,
@@ -242,6 +244,42 @@ func (e *Evaluator) evaluateIntegerExpression(node ast.Node) object.Object {
 	i := node.(*ast.IntegerExpression)
 	o := object.NewInteger(i.Value)
 	return o
+}
+
+func (e *Evaluator) evaluateArrayExpression(node ast.Node) object.Object {
+	a := node.(*ast.ArrayExpression)
+	oData := make([]object.Object, a.Length)
+	for i, ex := range a.Data {
+		oData[i] = e.Evaluate(ex)
+	}
+	o := object.NewArray(oData)
+	return o
+}
+
+func (e *Evaluator) evaluateArrayIndexExpression(node ast.Node) (o object.Object) {
+	iden := node.(*ast.ArrayIndexExpression)
+
+	arrE, _ := e.symbolTable.GetVar(iden.ArrayName)
+	if arrE.Type() != object.ARRAY {
+		errMsg := fmt.Sprintf(internal.TypeErr, arrE.Literal(), object.ARRAY)
+		e.panic(internal.NewError(iden.Metadata, errMsg, internal.RuntimeErr))
+	}
+	arr := arrE.(*object.Array)
+
+	indE := e.Evaluate(iden.IndexExpr)
+	if indE.Type() != object.INTEGER {
+		errMsg := fmt.Sprintf(internal.TypeErr, arrE.Literal(), object.INTEGER)
+		e.panic(internal.NewError(iden.Metadata, errMsg, internal.RuntimeErr))
+	}
+
+	indI := indE.(*object.Integer)
+	if indI.Value > arr.Length - 1 || indI.Value < 0 {
+		// index out of bounds error
+		e.panic(internal.NewError(iden.Metadata, internal.IndexOutOfBoundsErr, internal.RuntimeErr))
+	}
+
+	o = arr.Data[indI.Value]
+	return
 }
 
 func (e *Evaluator) evaluateFloatingPointExpression(node ast.Node) object.Object {

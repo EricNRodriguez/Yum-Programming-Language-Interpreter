@@ -18,6 +18,8 @@ func (oT ObjectType) String() string {
 		return "NULL"
 	case FLOAT:
 		return "FLOAT"
+	case ARRAY:
+		return "ARRAY"
 	default:
 		return "<UNKNOWN TYPE>"
 
@@ -31,5 +33,6 @@ const (
 	RETURN
 	USER_FUNCTION
 	NATIVE_FUNCTION
+	ARRAY
 	NULL
 )

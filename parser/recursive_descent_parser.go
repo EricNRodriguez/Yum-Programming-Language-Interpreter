@@ -41,7 +41,7 @@ func NewRecursiveDescentParser(l lexer.Lexer) (Parser, error) {
 	return rdp, err
 }
 
-func (rdp *RecursiveDescentParser) Parse() (prog ast.Node) {
+func (rdp *RecursiveDescentParser) Parse() (prog *ast.Program) {
 
 	stmts := make([]ast.Statement, 0)
 	for rdp.checkNextToken() {
@@ -61,6 +61,13 @@ func (rdp *RecursiveDescentParser) Parse() (prog ast.Node) {
 	}
 
 	prog = ast.NewProgram(rdp.currentToken().Data(), stmts...)
+
+	fmt.Println("program ---------------")
+	for _, stmt := range prog.Statements {
+		fmt.Println(stmt)
+	}
+	fmt.Println("---------------------")
+	fmt.Println()
 
 	// print all errors - dev purposes only
 	for _, e := range rdp.errors() {

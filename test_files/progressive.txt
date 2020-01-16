@@ -13,8 +13,11 @@ var y = 22.33;
 print(y);
 
 print(y + 3);
+var array = [y-3 * 4,2,3,4, 25.44];
 
-var array = [1,2,3,4];
+var secondOne = array[2];
+
+print(array[4] * 4);
 
 
 

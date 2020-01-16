@@ -32,6 +32,35 @@ func (i *Integer) Literal() string {
 	return fmt.Sprintf("%v", i.Value)
 }
 
+type Array struct {
+	Data   []Object
+	Length int64
+}
+
+func NewArray(d []Object) *Array {
+	return &Array{
+		Data:   d,
+		Length: int64(len(d)),
+	}
+}
+
+func (a *Array) Type() ObjectType {
+	return ARRAY
+}
+
+func (a *Array) Literal() string {
+	buff := bytes.Buffer{}
+	buff.WriteString("[")
+	for i, o := range a.Data {
+		buff.WriteString(o.Literal())
+		if i != len(a.Data)-1 {
+			buff.WriteString(",")
+		}
+	}
+	buff.WriteString("]")
+	return buff.String()
+}
+
 type Boolean struct {
 	Value bool
 }

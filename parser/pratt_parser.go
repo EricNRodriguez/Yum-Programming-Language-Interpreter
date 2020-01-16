@@ -211,7 +211,6 @@ func (pp *prattParser) parseParameters(useBrackets bool) (parameters []ast.Expre
 		eToken = token.RBRACKET
 	}
 
-
 	if pp.currentToken().Type() != sToken {
 		errMsg := fmt.Sprintf(internal.InvalidTokenErr, sToken, pp.currentToken().Literal())
 		pp.recordError(internal.NewError(pp.currentToken().Data(), errMsg, internal.SyntaxErr))
@@ -249,8 +248,8 @@ func (pp *prattParser) parseParameters(useBrackets bool) (parameters []ast.Expre
 func (pp *prattParser) parseIdent() (expr ast.Expression) {
 
 	// function call
+	idenToken := pp.currentToken()
 	if pp.peekToken().Type() == token.LPAREN {
-		idenToken := pp.currentToken()
 		pp.consume(1)
 		if params := pp.parseParameters(false); params != nil {
 			expr = ast.NewFunctionCallExpression(idenToken.Data(), idenToken.Literal(), params...)
@@ -260,8 +259,23 @@ func (pp *prattParser) parseIdent() (expr ast.Expression) {
 			return
 		}
 
+	} else if pp.peekToken().Type() == token.LBRACKET {
+		// array index
+
+		pp.consume(2) // consume iden and left bracket
+		indexExpr := pp.parseExpression(MINPRECEDENCE)
+
+		if pp.currentToken().Type() != token.RBRACKET {
+			errMsg := fmt.Sprintf(internal.InvalidTokenErr, token.RBRACKET, pp.currentToken().Type())
+			pp.recordError(internal.NewError(pp.currentToken().Data(), errMsg, internal.SyntaxErr))
+			pp.progressToNextSemicolon()
+			return
+		}
+		expr = ast.NewArrayIndexExpression(idenToken.Data(), idenToken.Literal(), indexExpr)
+		pp.consume(1) //  right bracket
+
 	} else {
-		expr = ast.NewIdentifierExpression(pp.currentToken())
+		expr = ast.NewIdentifierExpression(idenToken)
 		pp.consume(1)
 	}
 	return
