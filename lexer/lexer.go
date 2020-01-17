@@ -89,7 +89,8 @@ func (l *lexer) readInt() string {
 func (l *lexer) readNumber() (num string, ty token.TokenType) {
 	num = l.readInt()
 	ty = token.INT
-	if l.currentLine[l.currentLineIndex] == 46 {
+
+	if l.currentLineIndex < len(l.currentLine) && l.currentLine[l.currentLineIndex] == 46 {
 		l.currentLineIndex++
 		num = fmt.Sprintf("%v.%v", num, l.readInt())
 		ty = token.FLOAT
@@ -125,6 +126,7 @@ func (l *lexer) NextToken() (t token.Token, err error) {
 			return l.NextToken()
 		}
 	}
+
 
 	// next string
 	s = string(l.currentLine[l.currentLineIndex])
