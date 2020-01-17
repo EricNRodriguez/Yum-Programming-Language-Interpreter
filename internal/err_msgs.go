@@ -23,6 +23,7 @@ const (
 	TypeErr             = "%v not of type %v"
 	TypeOperationErr    = "operation %v not available for type %v"
 	IndexOutOfBoundsErr = "index out of bounds"
+	ConditionTypeErr = "condition does not evaluate to a boolean"
 
 	// internal error
 	UnimplementedType = "unable to evaluate type %v"

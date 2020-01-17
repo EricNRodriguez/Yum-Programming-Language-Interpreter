@@ -32,6 +32,7 @@ func NewSemanticAnalyser() (sA *SemanticAnalyser) {
 		ast.VAR_STATEMENT:                  sA.analyseVarStatement,
 		ast.RETURN_STATEMENT:               sA.analyseReturnStatement,
 		ast.IF_STATEMENT:                   sA.analyseIfStatement,
+		ast.WHILE_STATEMENT: sA.analyseWhileStatement,
 		ast.FUNCTION_DECLARATION_STATEMENT: sA.analyseFunctionDeclarationStatement,
 		ast.FUNCTION_CALL_STATEMENT:        sA.analyseFunctionCallStatement,
 		ast.ASSIGNMENT_STATEMENT:           sA.analyseAssignmentStatement,
@@ -132,6 +133,20 @@ func (sA *SemanticAnalyser) analyseIfStatement(node ast.Node) {
 	// analyse false block
 	sA.EnterScope()
 	sA.analyseBlockStatement(ifStmt.ElseBlock...)
+	sA.ExitScope()
+
+	return
+}
+
+func (sA *SemanticAnalyser) analyseWhileStatement(node ast.Node) {
+	wStmt := node.(*ast.WhileStatement)
+
+	// analyse condition
+	sA.Analyse(wStmt.Condition)
+
+	// analyse true block
+	sA.EnterScope()
+	sA.analyseBlockStatement(wStmt.Block...)
 	sA.ExitScope()
 
 	return

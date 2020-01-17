@@ -37,6 +37,7 @@ func NewRecursiveDescentParser(l lexer.Lexer) (Parser, error) {
 	pMR[token.IDEN] = rdp.parseIdenStatement
 	pMR[token.IF] = rdp.parseIfStatement
 	pMR[token.FUNC] = rdp.parseFuncDeclarationStatement
+	pMR[token.WHILE] = rdp.parseWhileStatement
 
 	return rdp, err
 }
@@ -59,12 +60,12 @@ func (rdp *RecursiveDescentParser) Parse() (prog *ast.Program) {
 
 	prog = ast.NewProgram(rdp.currentToken().Data(), stmts...)
 
-	//fmt.Println("program ---------------")
-	//for _, stmt := range prog.Statements {
-	//	fmt.Println(stmt)
-	//}
-	//fmt.Println("---------------------")
-	//fmt.Println()
+	fmt.Println("program ---------------")
+	for _, stmt := range prog.Statements {
+		fmt.Println(stmt)
+	}
+	fmt.Println("---------------------")
+	fmt.Println()
 
 	// print all errors - dev purposes only
 	for _, e := range rdp.errors() {
@@ -190,6 +191,30 @@ func (rdp *RecursiveDescentParser) parseIfStatement() (stmt ast.Statement) {
 	}
 
 	stmt = ast.NewIfStatement(t, condition, trueBlock, falseBlock)
+	return
+}
+
+func (rdp *RecursiveDescentParser) parseWhileStatement() (stmt ast.Statement) {
+	md := rdp.currentToken().Data()
+
+	if !rdp.expectTokenType(token.LPAREN) {
+		rdp.consumeBlockStatement()
+		return
+	}
+	rdp.consume(2) // consume while and left parenthesis
+
+	cond := rdp.parseExpression(MINPRECEDENCE)
+
+	if rdp.currentToken().Type() != token.RPAREN {
+		rdp.recordError(internal.NewError(rdp.currentToken().Data(), fmt.Sprintf(internal.InvalidTokenErr, token.RPAREN,
+			rdp.currentToken().Type()), internal.SyntaxErr))
+		rdp.consumeBlockStatement()
+		return
+	}
+	rdp.consume(1) // consume right parenthesis
+
+	block := rdp.parseBlockStatement()
+	stmt = ast.NewWhileStatement(md, cond, block)
 	return
 }
 

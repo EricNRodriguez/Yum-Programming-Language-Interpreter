@@ -11,6 +11,7 @@ const (
 	IF     TokenType = "IF"
 	ELSE   TokenType = "ELSE"
 	RETURN TokenType = "RETURN"
+	WHILE  TokenType = "WHILE"
 
 	// Arithmetic operations
 	ADD     TokenType = "+"

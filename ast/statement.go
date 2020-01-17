@@ -121,6 +121,31 @@ func (ifs *IfStatement) Type() NodeType {
 
 func (ifs *IfStatement) statementFunction() {}
 
+
+type WhileStatement struct {
+	token.Metadata
+	Condition Expression // Should make a boolean expression type to classify expressions with conditionals
+	Block []Statement
+}
+
+func NewWhileStatement(md token.Metadata, c Expression, b []Statement) *WhileStatement {
+	return &WhileStatement{
+		Metadata: md,
+		Condition: c,
+		Block: b,
+	}
+}
+
+func (w *WhileStatement) String() string {
+	return fmt.Sprintf("while (%v) { %v };", w.Condition.String(), statementArrayToString(w.Block))
+}
+
+func (w *WhileStatement) Type() NodeType {
+	return WHILE_STATEMENT
+}
+
+func (w *WhileStatement) statementFunction() {}
+
 type FunctionDeclarationStatement struct {
 	token.Metadata
 	Name       string
@@ -157,5 +182,5 @@ func statementArrayToString(staArr []Statement) string {
 	for i, sta := range staArr {
 		strArr[i] = sta.String()
 	}
-	return strings.Join(strArr, ", ")
+	return strings.Join(strArr, " ")
 }

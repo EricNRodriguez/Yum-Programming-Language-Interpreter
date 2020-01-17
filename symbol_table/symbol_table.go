@@ -7,10 +7,12 @@ import (
 type SymbolTable interface {
 	EnterScope()
 	ExitScope()
+	GetScope() int
 	SetVar(string, object.Object)
 	UpdateVar(string, object.Object)
 	DelVar(string)
 	GetVar(string) (object.Object, bool)
+	GetVarInScope(string, int) (object.Object, bool)
 	SetUserFunc(*object.UserFunction)
 	GetNativeFunc(string) (*object.NativeFunction, bool)
 	DelUserFunc(string)
@@ -31,7 +33,7 @@ type symbolTable struct {
 	scope                int
 }
 
-func NewSymbolTable() *symbolTable {
+func NewSymbolTable() SymbolTable {
 	globalScope := make(map[string]object.Object)
 	return &symbolTable{
 		nameSpace:            []map[string]object.Object{globalScope}, // initialise global scope
@@ -68,7 +70,11 @@ func (st *symbolTable) DelVar(name string) {
 }
 
 func (st *symbolTable) GetVar(name string) (o object.Object, ok bool) {
-	s := st.scope
+	return st.GetVarInScope(name, st.scope)
+}
+
+func (st *symbolTable) GetVarInScope(name string, scope int) (o object.Object, ok bool) {
+	s := scope
 	for s >= 0 && !ok {
 		if o, ok = st.nameSpace[s][name]; ok {
 			st.nameSpace[s][name] = o
@@ -129,6 +135,10 @@ func (st *symbolTable) ExitScope() {
 	st.nameSpace = st.nameSpace[0:st.scope]
 	st.scope--
 	return
+}
+
+func (st *symbolTable) GetScope() int {
+	return st.scope
 }
 
 func (st *symbolTable) EnterFunction() {

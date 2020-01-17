@@ -40,6 +40,7 @@ func NewEvaluator() (e *Evaluator) {
 		ast.VAR_STATEMENT:                  e.evaluateVarStatement,
 		ast.RETURN_STATEMENT:               e.evaluateReturnStatement,
 		ast.IF_STATEMENT:                   e.evaluateIfStatement,
+		ast.WHILE_STATEMENT: e.evaluateWhileStatement,
 		ast.FUNCTION_DECLARATION_STATEMENT: e.evaluateFunctionDeclarationStatement,
 		ast.FUNCTION_CALL_STATEMENT:        e.evaluateFunctionCallStatement,
 		ast.ASSIGNMENT_STATEMENT:           e.evaluateAssignmentStatement,
@@ -409,8 +410,28 @@ func (e *Evaluator) evaluateIfStatement(node ast.Node) (o object.Object) {
 		e.symbolTable.ExitScope() // exit nested scope
 
 	} else {
-		// record an error
-		o = object.NewNull()
+		e.panic(internal.NewError(ifStmt.Metadata, internal.ConditionTypeErr, internal.RuntimeErr))
+	}
+	return
+}
+
+func (e *Evaluator) evaluateWhileStatement(node ast.Node) (o object.Object) {
+	wStmt := node.(*ast.WhileStatement)
+	cond := e.Evaluate(wStmt.Condition)
+
+	if cond.Type() == object.BOOLEAN {
+		state := cond.(*object.Boolean).Value
+		for state {
+
+			e.symbolTable.EnterScope() // enter nested scope
+			e.evaluateBlockStatement(wStmt.Block...)
+			e.symbolTable.ExitScope() // exit nested scope
+
+			state = e.Evaluate(wStmt.Condition).(*object.Boolean).Value
+		}
+
+	} else {
+		e.panic(internal.NewError(wStmt.Metadata, internal.ConditionTypeErr, internal.RuntimeErr))
 	}
 	return
 }
