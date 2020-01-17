@@ -28,11 +28,12 @@ func NewEvaluator() (e *Evaluator) {
 		ast.PROGRAM:                        e.evaluateProgram,
 		ast.IDENTIFIER:                     e.evaluateIdentifier,
 		ast.ARRAY:                          e.evaluateArrayExpression,
-		ast.ARRAY_INDEX_EXPRESSION: e.evaluateArrayIndexExpression,
+		ast.ARRAY_INDEX_EXPRESSION:         e.evaluateArrayIndexExpression,
 		ast.PREFIX_EXPRESSION:              e.evaluatePrefixExpression,
 		ast.INFIX_EXPRESSION:               e.evaluateInfixExpression,
 		ast.INTEGER_EXPRESSION:             e.evaluateIntegerExpression,
 		ast.FLOATING_POINT_EXPRESSION:      e.evaluateFloatingPointExpression,
+		ast.STRING_EXPRESSION: e.evaluateStringExpression,
 		ast.BOOLEAN_EXPRESSION:             e.evaluateBooleanExpression,
 		ast.FUNC_CALL_EXPRESSION:           e.evaluateFunctionCallExpression,
 		ast.IDENTIFIER_EXPRESSION:          e.evaluateIdentifierExpression,
@@ -126,56 +127,38 @@ func (e *Evaluator) evaluateInfixExpression(node ast.Node) (o object.Object) {
 	rObj := e.unpack(e.Evaluate(iExpr.RightExpression))
 
 	if lObj.Type() == object.INTEGER && rObj.Type() == object.INTEGER {
-		if lObj.Type() == object.INTEGER {
-			lObj := lObj.(*object.Integer)
-			rObj := rObj.(*object.Integer)
+		lObj := lObj.(*object.Integer)
+		rObj := rObj.(*object.Integer)
 
-			switch iExpr.Token.Type() {
-			case token.ADD:
-				o = object.NewInteger(lObj.Value + rObj.Value)
-			case token.SUB:
-				o = object.NewInteger(lObj.Value - rObj.Value)
-			case token.DIV:
-				if rObj.Value == 0 {
-					e.panic(internal.NewError(iExpr.Data(), internal.DivisionByZeroErr, internal.RuntimeErr))
-				}
+		switch iExpr.Token.Type() {
+		case token.ADD:
+			o = object.NewInteger(lObj.Value + rObj.Value)
+		case token.SUB:
+			o = object.NewInteger(lObj.Value - rObj.Value)
+		case token.DIV:
+			if rObj.Value == 0 {
+				e.panic(internal.NewError(iExpr.Data(), internal.DivisionByZeroErr, internal.RuntimeErr))
+			}
 
-				o = object.NewInteger(lObj.Value / rObj.Value)
-			case token.MULT:
-				o = object.NewInteger(lObj.Value * rObj.Value)
-			case token.GTHAN:
-				o = object.NewBoolean(lObj.Value > rObj.Value)
-			case token.LTHAN:
-				o = object.NewBoolean(lObj.Value < rObj.Value)
-			case token.GTEQUAL:
-				o = object.NewBoolean(lObj.Value >= rObj.Value)
-			case token.LTEQUAL:
-				o = object.NewBoolean(lObj.Value <= rObj.Value)
-			case token.EQUAL:
-				o = object.NewBoolean(lObj.Value == rObj.Value)
-			case token.NEQUAL:
-				o = object.NewBoolean(lObj.Value != rObj.Value)
-			default:
-				e.panic(internal.NewError(iExpr.Data(), fmt.Sprintf(internal.TypeOperationErr, iExpr.Token.Type(),
-					lObj.Type()), internal.RuntimeErr))
-				o = object.NewNull()
-			}
-		} else {
-			lObj := lObj.(*object.Boolean)
-			rObj := rObj.(*object.Boolean)
-			switch iExpr.Token.Type() {
-			case token.EQUAL:
-				o = object.NewBoolean(lObj.Value == rObj.Value)
-			case token.NEQUAL:
-				o = object.NewBoolean(lObj.Value != rObj.Value)
-			case token.AND:
-				o = object.NewBoolean(lObj.Value && rObj.Value)
-			case token.OR:
-				o = object.NewBoolean(lObj.Value || rObj.Value)
-			default:
-				e.panic(internal.NewError(iExpr.Data(), fmt.Sprintf(internal.TypeOperationErr, iExpr.Token.Type(),
-					lObj.Type()), internal.RuntimeErr))
-			}
+			o = object.NewInteger(lObj.Value / rObj.Value)
+		case token.MULT:
+			o = object.NewInteger(lObj.Value * rObj.Value)
+		case token.GTHAN:
+			o = object.NewBoolean(lObj.Value > rObj.Value)
+		case token.LTHAN:
+			o = object.NewBoolean(lObj.Value < rObj.Value)
+		case token.GTEQUAL:
+			o = object.NewBoolean(lObj.Value >= rObj.Value)
+		case token.LTEQUAL:
+			o = object.NewBoolean(lObj.Value <= rObj.Value)
+		case token.EQUAL:
+			o = object.NewBoolean(lObj.Value == rObj.Value)
+		case token.NEQUAL:
+			o = object.NewBoolean(lObj.Value != rObj.Value)
+		default:
+			e.panic(internal.NewError(iExpr.Data(), fmt.Sprintf(internal.TypeOperationErr, iExpr.Token.Type(),
+				lObj.Type()), internal.RuntimeErr))
+			o = object.NewNull()
 		}
 	} else if (lObj.Type() == object.INTEGER || lObj.Type() == object.FLOAT) &&
 		(rObj.Type() == object.INTEGER || rObj.Type() == object.FLOAT) {
@@ -215,6 +198,35 @@ func (e *Evaluator) evaluateInfixExpression(node ast.Node) (o object.Object) {
 			o = object.NewNull()
 		}
 
+	} else if  lObj.Type() == object.BOOLEAN && rObj.Type() == object.BOOLEAN{
+		lObj := lObj.(*object.Boolean)
+		rObj := rObj.(*object.Boolean)
+		switch iExpr.Token.Type() {
+		case token.EQUAL:
+			o = object.NewBoolean(lObj.Value == rObj.Value)
+		case token.NEQUAL:
+			o = object.NewBoolean(lObj.Value != rObj.Value)
+		case token.AND:
+			o = object.NewBoolean(lObj.Value && rObj.Value)
+		case token.OR:
+			o = object.NewBoolean(lObj.Value || rObj.Value)
+		default:
+			e.panic(internal.NewError(iExpr.Data(), fmt.Sprintf(internal.TypeOperationErr, iExpr.Token.Type(),
+				lObj.Type()), internal.RuntimeErr))
+		}
+	} else if lObj.Type() == object.STRING && rObj.Type() == object.STRING {
+		lObj := lObj.(*object.String)
+		rObj := rObj.(*object.String)
+		switch iExpr.Token.Type() {
+		case token.EQUAL:
+			o = object.NewBoolean(lObj.Literal() == rObj.Literal())
+		case token.ADD:
+			o = object.NewString(lObj.Literal() + rObj.Lit)
+		default:
+			e.panic(internal.NewError(iExpr.Data(), fmt.Sprintf(internal.TypeOperationErr, iExpr.Token.Type(),
+				lObj.Type()), internal.RuntimeErr))
+		}
+
 	} else {
 		e.panic(internal.NewError(iExpr.Data(), fmt.Sprintf(internal.TypeOperationErr, iExpr.Literal(),
 			fmt.Sprintf("%v and %v", lObj.Type(), rObj.Type())),
@@ -247,6 +259,12 @@ func (e *Evaluator) evaluateIntegerExpression(node ast.Node) object.Object {
 	return o
 }
 
+func (e *Evaluator) evaluateStringExpression(node ast.Node) object.Object {
+	s := node.(*ast.StringExpression)
+	o := object.NewString(s.Literal)
+	return o
+}
+
 func (e *Evaluator) evaluateArrayExpression(node ast.Node) object.Object {
 	a := node.(*ast.ArrayExpression)
 	oData := make([]object.Object, a.Length)
@@ -274,7 +292,7 @@ func (e *Evaluator) evaluateArrayIndexExpression(node ast.Node) (o object.Object
 	}
 
 	indI := indE.(*object.Integer)
-	if indI.Value > arr.Length - 1 || indI.Value < 0 {
+	if indI.Value > arr.Length-1 || indI.Value < 0 {
 		// index out of bounds error
 		e.panic(internal.NewError(iden.Metadata, internal.IndexOutOfBoundsErr, internal.RuntimeErr))
 	}

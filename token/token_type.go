@@ -45,8 +45,12 @@ const (
 	LBRACKET TokenType = "["
 	RBRACKET TokenType = "]"
 
+	// string
+	QUOTATION_MARK TokenType = "\""
+
 	IDEN    TokenType = "IDENTIFIER"
 	INT     TokenType = "INT"
 	FLOAT   TokenType = "FLOAT"
 	BOOLEAN TokenType = "BOOL"
+	STRING  TokenType = "STRING"
 )

@@ -5,6 +5,7 @@ import (
 	"Yum-Programming-Language-Interpreter/internal"
 	"Yum-Programming-Language-Interpreter/lexer"
 	"Yum-Programming-Language-Interpreter/token"
+	"bytes"
 	"fmt"
 	"strconv"
 )
@@ -84,6 +85,7 @@ func newPrattParser(l lexer.Lexer) (prattParserInterface, error) {
 	nMs[token.FLOAT] = pp.parseFloatingPointNumber
 	nMs[token.IDEN] = pp.parseIdent
 	nMs[token.BOOLEAN] = pp.parseBoolean
+	nMs[token.QUOTATION_MARK] = pp.parseString
 	nMs[token.LPAREN] = pp.parseGroupExpression
 	nMs[token.LBRACKET] = pp.parseArrayDeclaration
 
@@ -197,6 +199,26 @@ func (pp *prattParser) parseFloatingPointNumber() (expr ast.Expression) {
 	expr = ast.NewFloatingPointExpression(pp.currentToken(), i)
 	pp.consume(1) // consume float
 
+	return
+}
+
+func (pp *prattParser) parseString() (expr ast.Expression) {
+	md := pp.currentToken().Data()
+	pp.consume(1) // consume left quotation mark
+
+	sBuff := bytes.Buffer{}
+	for pp.currentToken().Type() != token.QUOTATION_MARK {
+		if pp.currentToken().Type() == token.EOF {
+			pp.recordError(internal.NewError(pp.currentToken().Data(), fmt.Sprintf(internal.EndOfFileErr, pp.currentToken().LineNumber()), internal.SyntaxErr))
+			pp.progressToNextSemicolon()
+			return
+		}
+
+		sBuff.WriteString(pp.currentToken().Literal())
+		pp.consume(1)
+	}
+	pp.consume(1) // consume right quotation mark
+	expr = ast.NewStringExpression(md, sBuff.String())
 	return
 }
 

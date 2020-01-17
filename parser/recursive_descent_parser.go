@@ -50,24 +50,21 @@ func (rdp *RecursiveDescentParser) Parse() (prog *ast.Program) {
 			rdp.recordError(err)
 			rdp.progressToNextSemicolon()
 
-		} else {
-
-			if stmt != nil {
-				stmts = append(stmts, stmt)
-			}
-
+		} else if stmt != nil {
+			stmts = append(stmts, stmt)
 		}
+
 		rdp.consume(1) // moving to next statement
 	}
 
 	prog = ast.NewProgram(rdp.currentToken().Data(), stmts...)
 
-	fmt.Println("program ---------------")
-	for _, stmt := range prog.Statements {
-		fmt.Println(stmt)
-	}
-	fmt.Println("---------------------")
-	fmt.Println()
+	//fmt.Println("program ---------------")
+	//for _, stmt := range prog.Statements {
+	//	fmt.Println(stmt)
+	//}
+	//fmt.Println("---------------------")
+	//fmt.Println()
 
 	// print all errors - dev purposes only
 	for _, e := range rdp.errors() {

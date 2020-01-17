@@ -171,6 +171,28 @@ func expressionArrayToString(staArr []Expression) string {
 	return strings.Join(strArr, ", ")
 }
 
+type StringExpression struct {
+	token.Metadata
+	Literal string
+}
+
+func NewStringExpression(md token.Metadata, l string) *StringExpression {
+	return &StringExpression{
+		Metadata: md,
+		Literal: l}
+}
+
+func (s *StringExpression) String() string {
+	return s.Literal
+}
+
+func (s *StringExpression) Type() NodeType {
+	return STRING_EXPRESSION
+}
+
+func (s *StringExpression) expressionFunction() {}
+
+
 type ArrayExpression struct {
 	token.Metadata
 	Data   []Expression
@@ -212,7 +234,7 @@ type ArrayIndexExpression struct {
 
 func NewArrayIndexExpression(md token.Metadata, n string, e Expression) *ArrayIndexExpression {
 	return &ArrayIndexExpression{
-		Metadata: md,
+		Metadata:  md,
 		ArrayName: n,
 		IndexExpr: e,
 	}

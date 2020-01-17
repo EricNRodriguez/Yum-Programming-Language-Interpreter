@@ -22,6 +22,7 @@ type lexer struct {
 	currentLineNumber int
 	currentLineIndex  int
 	fileName          string
+	ignoreSpace       bool
 }
 
 func NewLexer(f *os.File) (l Lexer, err error) {
@@ -44,6 +45,7 @@ func NewLexer(f *os.File) (l Lexer, err error) {
 		currentLine:       line,
 		currentLineIndex:  0,
 		fileName:          f.Name(),
+		ignoreSpace:       true,
 	}
 
 	return
@@ -127,13 +129,12 @@ func (l *lexer) NextToken() (t token.Token, err error) {
 		}
 	}
 
-
 	// next string
 	s = string(l.currentLine[l.currentLineIndex])
 	l.currentLineIndex++
 
 	// ignore white space
-	for s == " " && l.currentLineIndex < len(l.currentLine) {
+	for l.ignoreSpace && s == " " && l.currentLineIndex < len(l.currentLine) {
 		s = string(l.currentLine[l.currentLineIndex])
 		l.currentLineIndex++
 
@@ -199,6 +200,9 @@ func (l *lexer) NextToken() (t token.Token, err error) {
 		t = token.NewToken(token.SEMICOLON, s, l.currentLineNumber, l.fileName)
 	case token.COMMA:
 		t = token.NewToken(token.COMMA, s, l.currentLineNumber, l.fileName)
+	case token.QUOTATION_MARK:
+		t = token.NewToken(token.QUOTATION_MARK, s, l.currentLineNumber, l.fileName)
+		l.ignoreSpace = !l.ignoreSpace
 	case token.LPAREN:
 		t = token.NewToken(token.LPAREN, s, l.currentLineNumber, l.fileName)
 	case token.RPAREN:

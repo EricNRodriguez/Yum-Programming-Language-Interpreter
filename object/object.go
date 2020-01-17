@@ -32,6 +32,24 @@ func (i *Integer) Literal() string {
 	return fmt.Sprintf("%v", i.Value)
 }
 
+type String struct {
+	Lit string
+}
+
+func NewString(l string) *String {
+	return &String{
+		Lit: l,
+	}
+}
+
+func (s *String) Type() ObjectType {
+	return STRING
+}
+
+func (s *String) Literal() string {
+	return s.Lit
+}
+
 type Array struct {
 	Data   []Object
 	Length int64

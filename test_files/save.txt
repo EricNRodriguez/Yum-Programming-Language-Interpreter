@@ -1,0 +1,20 @@
+
+func hello(a, b, c) {
+    var u = 22;
+    return a;
+};
+
+var u = 12;
+
+var y = 22
+
+; var i = 66 == 88;
+
+
+y = [1*2+3-00,2,3,4,5];
+
+print(hello(y,1,2));
+
+var op = "hello";
+
+print(y == y);

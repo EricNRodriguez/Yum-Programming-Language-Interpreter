@@ -20,6 +20,8 @@ func (oT ObjectType) String() string {
 		return "FLOAT"
 	case ARRAY:
 		return "ARRAY"
+	case STRING:
+		return "STRING"
 	default:
 		return "<UNKNOWN TYPE>"
 
@@ -30,6 +32,7 @@ const (
 	INTEGER ObjectType = iota
 	FLOAT
 	BOOLEAN
+	STRING
 	RETURN
 	USER_FUNCTION
 	NATIVE_FUNCTION

@@ -1,0 +1,7 @@
+- write test cases for everything
+- make identifier identifier expression
+
+
+Design decision:
+- ignoring overflow errors
+

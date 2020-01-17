@@ -8,6 +8,7 @@ const (
 	ErrEmptyFile             = "program file is empty"
 	ErrInitParser            = "unable to initialise parser"
 	ErrInvalidStatement      = "invalid statement beginning with %v"
+	EndOfFileErr = "unexpected EOF at line %v"
 
 	// semantic errors
 	DeclaredVariableErr              = "%v already declared in current scope"
@@ -18,9 +19,9 @@ const (
 	UndeclaredIdentifierErr          = "%v not declared"
 
 	// runtime errors
-	DivisionByZeroErr = "division by zero"
-	TypeErr           = "%v not of type %v"
-	TypeOperationErr  = "operation %v not available for type %v"
+	DivisionByZeroErr   = "division by zero"
+	TypeErr             = "%v not of type %v"
+	TypeOperationErr    = "operation %v not available for type %v"
 	IndexOutOfBoundsErr = "index out of bounds"
 
 	// internal error

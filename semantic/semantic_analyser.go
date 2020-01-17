@@ -141,6 +141,9 @@ func (sA *SemanticAnalyser) analyseIfStatement(node ast.Node) {
 func (sA *SemanticAnalyser) analyseVarStatement(node ast.Node) {
 	stmt := node.(*ast.VarStatement)
 
+	// analyse expression
+	sA.Analyse(stmt.Expression)
+
 	if !sA.AvailableVar(stmt.Identifier.Name, false) {
 		errMsg := fmt.Sprintf(internal.DeclaredVariableErr, stmt.Identifier.Name)
 		sA.recordError(internal.NewError(stmt.Metadata, errMsg,
@@ -150,9 +153,6 @@ func (sA *SemanticAnalyser) analyseVarStatement(node ast.Node) {
 
 	// save var
 	sA.SetVar(stmt.Identifier.Name, object.NewNull())
-
-	// analyse expression
-	sA.Analyse(stmt.Expression)
 	return
 }
 
