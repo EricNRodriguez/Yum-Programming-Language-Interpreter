@@ -1,7 +1,7 @@
 sayhello();
 
 
-func hello(a,b,c) {
+func hell3o(a,b,c) {
     return a + b + c;
 };
 
@@ -10,6 +10,9 @@ func sayhello() {
 };
 
 
-import jello.hello;
+import save.hello;
+
 
 print(3456);
+
+hello(3, 1, 2);

@@ -6,6 +6,7 @@ import (
 	"Yum-Programming-Language-Interpreter/lexer"
 	"Yum-Programming-Language-Interpreter/token"
 	"fmt"
+	"os"
 )
 
 type parseMethod func() ast.Statement
@@ -43,7 +44,7 @@ func NewRecursiveDescentParser(l lexer.Lexer) (Parser, error) {
 	return rdp, err
 }
 
-func (rdp *RecursiveDescentParser) Parse() (prog *ast.Program) {
+func (rdp *RecursiveDescentParser) Parse() (prog *ast.Program, errs []error) {
 
 	stmts := make([]ast.Statement, 0)
 	for rdp.checkNextToken() {
@@ -63,20 +64,21 @@ func (rdp *RecursiveDescentParser) Parse() (prog *ast.Program) {
 	prog.Hoist() // moves declarations and imports to the top of the file
 
 
-	fmt.Println("program ---------------")
-	for _, stmt := range prog.Statements {
-		fmt.Println(stmt)
-	}
-	fmt.Println("---------------------")
-	fmt.Println()
+	//fmt.Println("program ---------------")
+	//for _, stmt := range prog.Statements {
+	//	fmt.Println(stmt)
+	//}
+	//fmt.Println("---------------------")
+	//fmt.Println()
 
-	// print all errors - dev purposes only
-	for _, e := range rdp.errors() {
-		fmt.Println(e.Error())
-	}
+	//// print all errors - dev purposes only
+	//for _, e := range rdp.errors() {
+	//	fmt.Println(e.Error())
+	//}
 
-	return prog
+	return prog, rdp.errors()
 }
+
 
 func (rdp *RecursiveDescentParser) parseStatement() (stmt ast.Statement, err error) {
 	if parser, ok := rdp.parseMethodRouter[rdp.currentToken().Type()]; !ok {
@@ -121,14 +123,21 @@ func (rdp *RecursiveDescentParser) parseVarStatement() (stmt ast.Statement) {
 }
 
 func (rdp *RecursiveDescentParser) parseImportStatement() (stmt ast.Statement) {
-	md := rdp.currentToken().Data()
+
+	var (
+		fDS *ast.FunctionDeclarationStatement
+		ok bool
+		md = rdp.currentToken().Data()
+		fileName string
+	)
+
 	if !rdp.expectTokenType(token.IDEN) {
 		rdp.progressToNextSemicolon()
 		return
 	}
 	rdp.consume(1) // import keyword
 
-	fileN := rdp.currentToken().Literal()
+	fPath := rdp.currentToken().Literal()
 
 	if !rdp.expectTokenType(token.PERIOD) {
 		rdp.progressToNextSemicolon()
@@ -141,12 +150,78 @@ func (rdp *RecursiveDescentParser) parseImportStatement() (stmt ast.Statement) {
 		return
 	}
 	rdp.consume(1) // period
-
 	funcN := rdp.currentToken().Literal()
 	rdp.consume(1)
 
-	stmt = ast.NewImportStatement(md, fileN, funcN)
+	if ok := rdp.parseImportedProgram(fPath); !ok {
+		return
+	}
+
+
+	if fDS, ok = rdp.getImportedFunction(fPath, funcN); !ok {
+
+		errMsg := fmt.Sprintf(internal.ImportedUndefinedFunctionErr, fPath, funcN)
+		rdp.recordError(internal.NewError(md, errMsg, internal.SyntaxErr))
+		rdp.progressToNextSemicolon()
+		return
+	}
+
+	stmt = ast.NewImportStatement(md, fileName, fDS)
 	return
+}
+
+func (rdp *RecursiveDescentParser) parseImportedProgram(fName string) (ok bool){
+	var (
+		f      *os.File
+		l      lexer.Lexer
+		fileName string
+		p *ast.Program
+		parser Parser
+		err    error
+		errs   []error
+
+	)
+
+
+	if rdp.isImportedProgram(fileName) {
+		return true
+	}
+
+	if f, err = os.Open(fmt.Sprintf("./%v.txt", fName)); err != nil {
+		errMsg := fmt.Sprintf(internal.UnknownImportErr, fileName)
+		rdp.recordError(internal.NewError(rdp.currentToken().Data(), errMsg, internal.SemanticErr))
+		rdp.progressToNextSemicolon()
+		return
+	}
+
+	if l, err = lexer.NewLexer(f); err != nil {
+		err := err.(*internal.Error)
+		errMsg := fmt.Sprintf(internal.InvalidFileImportErr, f.Name(), err.Error())
+		rdp.recordError(internal.NewError(rdp.currentToken().Data(), errMsg, err.Type()))
+		rdp.progressToNextSemicolon()
+		return
+	}
+
+	if parser, err = NewRecursiveDescentParser(l); err != nil {
+		err := err.(*internal.Error)
+		errMsg := fmt.Sprintf(internal.InvalidFileImportErr, f.Name(), err.Error())
+		rdp.recordError(internal.NewError(rdp.currentToken().Data(), errMsg, err.Type()))
+		rdp.progressToNextSemicolon()
+		return
+	}
+
+	if p, errs = parser.Parse(); errs != nil && len(errs) != 0 {
+		for _, err = range errs {
+			err := err.(*internal.Error)
+			errMsg := fmt.Sprintf(internal.InvalidFileImportErr, f.Name(), err.Error())
+			rdp.recordError(internal.NewError(rdp.currentToken().Data(), errMsg, err.Type()))
+		}
+		rdp.progressToNextSemicolon()
+		return
+	}
+
+	rdp.addImportedProgram(p)
+	return true
 }
 
 func (rdp *RecursiveDescentParser) parseReturnStatement() (stmt ast.Statement) {

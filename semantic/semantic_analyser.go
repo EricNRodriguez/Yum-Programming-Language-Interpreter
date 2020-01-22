@@ -62,7 +62,7 @@ func (sA *SemanticAnalyser) analyseIdentifierExpression(node ast.Node) {
 	stmt := node.(*ast.IdentifierExpression)
 
 	if sA.AvailableVar(stmt.Name, true) {
-		errMsg := fmt.Sprintf(internal.UndeclaredIdentifierErr, stmt.Name)
+		errMsg := fmt.Sprintf(internal.UndeclaredVariableErr, stmt.Name)
 		sA.recordError(internal.NewError(stmt.Metadata, errMsg, internal.SemanticErr))
 		return
 	}
@@ -123,14 +123,14 @@ func (sA *SemanticAnalyser) analyseReturnStatement(node ast.Node) {
 func (sA *SemanticAnalyser) analyseImportStatement(node ast.Node) {
 	iStmt := node.(*ast.ImportStatement)
 
-	if !sA.AvailableFunc(iStmt.ImportFunctionName) {
-		errMsg := fmt.Sprintf(internal.DeclaredFunctionErr, iStmt.ImportFunctionName)
+	if !sA.AvailableFunc(iStmt.ImportedFunctionDeclaration.Name) {
+		errMsg := fmt.Sprintf(internal.ImportedDeclaredFunctionErr, iStmt.ImportedFunctionDeclaration.Name)
 		sA.recordError(internal.NewError(iStmt.Metadata, errMsg, internal.SemanticErr))
 		return
 	}
 
-	// declare func name
-	sA.SetUserFunc(object.NewUserFunction(iStmt.ImportFunctionName, make([]string, 0), []ast.Statement{}))
+	// analyse func
+	sA.analyseFunctionDeclarationStatement(iStmt.ImportedFunctionDeclaration)
 
 	return
 }
@@ -191,7 +191,7 @@ func (sA *SemanticAnalyser) analyseAssignmentStatement(node ast.Node) {
 	stmt := node.(*ast.AssignmentStatement)
 	// check that it exists
 	if sA.AvailableVar(stmt.Identifier.Name, true) {
-		errMsg := fmt.Sprintf(internal.UndeclaredIdentifierErr, stmt.Identifier.Name)
+		errMsg := fmt.Sprintf(internal.UndeclaredVariableErr, stmt.Identifier.Name)
 		sA.recordError(internal.NewError(stmt.Metadata, errMsg, internal.SemanticErr))
 		return
 	}

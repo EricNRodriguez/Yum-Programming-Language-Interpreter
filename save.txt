@@ -1,7 +1,6 @@
-
-func hello(a, b, c) {
-    var u = 22;
-    return a;
+func hello(a,b,c) {
+    print("here at hello");
+    print(a+b+c);
 };
 
 var u = 12;
