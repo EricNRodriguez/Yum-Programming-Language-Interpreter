@@ -37,6 +37,7 @@ func NewSemanticAnalyser() (sA *SemanticAnalyser) {
 		ast.FUNCTION_CALL_STATEMENT:        sA.analyseFunctionCallStatement,
 		ast.ASSIGNMENT_STATEMENT:           sA.analyseAssignmentStatement,
 		ast.IDENTIFIER_EXPRESSION:          sA.analyseIdentifierExpression,
+		ast.IMPORT_STATEMENT: sA.analyseImportStatement,
 	}
 
 	return
@@ -119,6 +120,21 @@ func (sA *SemanticAnalyser) analyseReturnStatement(node ast.Node) {
 	return
 }
 
+func (sA *SemanticAnalyser) analyseImportStatement(node ast.Node) {
+	iStmt := node.(*ast.ImportStatement)
+
+	if !sA.AvailableFunc(iStmt.ImportFunctionName) {
+		errMsg := fmt.Sprintf(internal.DeclaredFunctionErr, iStmt.ImportFunctionName)
+		sA.recordError(internal.NewError(iStmt.Metadata, errMsg, internal.SemanticErr))
+		return
+	}
+
+	// declare func name
+	sA.SetUserFunc(object.NewUserFunction(iStmt.ImportFunctionName, make([]string, 0), []ast.Statement{}))
+
+	return
+}
+
 func (sA *SemanticAnalyser) analyseIfStatement(node ast.Node) {
 	ifStmt := node.(*ast.IfStatement)
 
@@ -188,7 +204,6 @@ func (sA *SemanticAnalyser) analyseAssignmentStatement(node ast.Node) {
 
 func (sA *SemanticAnalyser) analyseFunctionDeclarationStatement(node ast.Node) {
 	fDec := node.(*ast.FunctionDeclarationStatement)
-
 	if !sA.AvailableFunc(fDec.Name) {
 		errMsg := fmt.Sprintf(internal.DeclaredFunctionErr, fDec.Name)
 		sA.recordError(internal.NewError(fDec.Metadata, errMsg, internal.SemanticErr))
@@ -207,6 +222,7 @@ func (sA *SemanticAnalyser) analyseFunctionDeclarationStatement(node ast.Node) {
 
 	sA.analyseBlockStatement(fDec.Body...)
 	sA.ExitFunction()
+
 
 	return
 }

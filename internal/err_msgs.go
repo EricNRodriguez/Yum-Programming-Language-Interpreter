@@ -14,7 +14,7 @@ const (
 	DeclaredVariableErr              = "%v already declared in current scope"
 	ReturnLocationErr                = "unable to return outside of function"
 	UndeclaredFunctionErr            = "%v not declared"
-	DeclaredFunctionErr              = "%v already declared"
+	DeclaredFunctionErr              = "%v declared in file"
 	InvalidFunctionCallParametersErr = "%v requires %v parameters, %v given"
 	UndeclaredIdentifierErr          = "%v not declared"
 

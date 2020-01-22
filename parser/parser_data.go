@@ -49,6 +49,7 @@ func newParserData(l lexer.Lexer) (parserDataInterface, error) {
 	}
 
 	for cT.Type() != token.EOF {
+		fmt.Println(cT)
 		cT, _ = l.NextToken()
 		pd.addToken(cT)
 	}

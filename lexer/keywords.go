@@ -11,6 +11,7 @@ var keywords = map[string]token.TokenType{
 	"true":   token.BOOLEAN,
 	"false":  token.BOOLEAN,
 	"while": token.WHILE,
+	"import": token.IMPORT,
 }
 
 func classifyTokenLiteral(s string) (t token.TokenType) {

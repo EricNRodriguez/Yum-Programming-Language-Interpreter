@@ -1,5 +1,15 @@
-var y = 0;
-while (y < 5) {
-    print(y);
-    y = y + 1;
+sayhello();
+
+
+func hello(a,b,c) {
+    return a + b + c;
 };
+
+func sayhello() {
+    print("hello guys");
+};
+
+
+import jello.hello;
+
+print(3456);

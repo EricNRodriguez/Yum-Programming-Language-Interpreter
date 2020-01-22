@@ -177,6 +177,31 @@ func (fds *FunctionDeclarationStatement) Type() NodeType {
 
 func (fds *FunctionDeclarationStatement) statementFunction() {}
 
+type ImportStatement struct {
+	token.Metadata
+	ImportFileName string
+	ImportFunctionName string
+}
+
+func NewImportStatement(md token.Metadata, fileN string, funcN string) *ImportStatement {
+	return &ImportStatement{
+		Metadata: md,
+		ImportFileName: fileN,
+		ImportFunctionName: funcN,
+	}
+}
+
+func (i *ImportStatement) Type() NodeType {
+	return IMPORT_STATEMENT
+}
+
+func (i *ImportStatement) String() string {
+	return fmt.Sprintf("import %v.%v", i.ImportFileName, i.ImportFunctionName)
+}
+
+func (i *ImportStatement) statementFunction() {}
+
+
 func statementArrayToString(staArr []Statement) string {
 	var strArr = make([]string, len(staArr))
 	for i, sta := range staArr {
@@ -184,3 +209,5 @@ func statementArrayToString(staArr []Statement) string {
 	}
 	return strings.Join(strArr, " ")
 }
+
+

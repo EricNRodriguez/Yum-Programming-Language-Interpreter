@@ -202,7 +202,9 @@ func (l *lexer) NextToken() (t token.Token, err error) {
 		t = token.NewToken(token.COMMA, s, l.currentLineNumber, l.fileName)
 	case token.QUOTATION_MARK:
 		t = token.NewToken(token.QUOTATION_MARK, s, l.currentLineNumber, l.fileName)
-		l.ignoreSpace = !l.ignoreSpace
+		l.ignoreSpace = !l.ignoreSpace // allow strings to have white spaces
+	case token.PERIOD:
+		t = token.NewToken(token.PERIOD, s, l.currentLineNumber, l.fileName)
 	case token.LPAREN:
 		t = token.NewToken(token.LPAREN, s, l.currentLineNumber, l.fileName)
 	case token.RPAREN:

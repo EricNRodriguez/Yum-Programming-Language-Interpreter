@@ -108,7 +108,7 @@ func (st *symbolTable) SetUserFunc(f *object.UserFunction) {
 func (st *symbolTable) AvailableFunc(name string) bool {
 	_, okU := st.functionDeclarations[name]
 	_, okN := st.nativeFunctions[name]
-	return !(okU && okN)
+	return !(okU || okN)
 }
 
 func (st *symbolTable) DelUserFunc(string) {

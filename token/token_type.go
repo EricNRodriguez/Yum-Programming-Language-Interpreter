@@ -12,6 +12,7 @@ const (
 	ELSE   TokenType = "ELSE"
 	RETURN TokenType = "RETURN"
 	WHILE  TokenType = "WHILE"
+	IMPORT TokenType = "IMPORT"
 
 	// Arithmetic operations
 	ADD     TokenType = "+"
@@ -45,6 +46,8 @@ const (
 
 	LBRACKET TokenType = "["
 	RBRACKET TokenType = "]"
+
+	PERIOD TokenType = "."
 
 	// string
 	QUOTATION_MARK TokenType = "\""

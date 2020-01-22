@@ -42,6 +42,8 @@ func (nt NodeType) String() string {
 		return "STRING EXPRESSION"
 	case WHILE_STATEMENT:
 		return "WHILE STATEMENT"
+	case IMPORT_STATEMENT:
+		return "IMPORT STATEMENT"
 	default:
 		return "UNKNOWN TYPE"
 
@@ -68,4 +70,5 @@ const (
 	IF_STATEMENT
 	FUNCTION_DECLARATION_STATEMENT
 	FUNCTION_CALL_STATEMENT
+	IMPORT_STATEMENT
 )

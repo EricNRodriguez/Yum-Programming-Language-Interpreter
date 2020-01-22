@@ -38,6 +38,7 @@ func NewRecursiveDescentParser(l lexer.Lexer) (Parser, error) {
 	pMR[token.IF] = rdp.parseIfStatement
 	pMR[token.FUNC] = rdp.parseFuncDeclarationStatement
 	pMR[token.WHILE] = rdp.parseWhileStatement
+	pMR[token.IMPORT] = rdp.parseImportStatement
 
 	return rdp, err
 }
@@ -59,6 +60,8 @@ func (rdp *RecursiveDescentParser) Parse() (prog *ast.Program) {
 	}
 
 	prog = ast.NewProgram(rdp.currentToken().Data(), stmts...)
+	prog.Hoist() // moves declarations and imports to the top of the file
+
 
 	fmt.Println("program ---------------")
 	for _, stmt := range prog.Statements {
@@ -114,6 +117,35 @@ func (rdp *RecursiveDescentParser) parseVarStatement() (stmt ast.Statement) {
 	if expr := rdp.parseExpression(MINPRECEDENCE); expr != nil {
 		stmt = ast.NewVarStatement(varToken, iden, expr)
 	}
+	return
+}
+
+func (rdp *RecursiveDescentParser) parseImportStatement() (stmt ast.Statement) {
+	md := rdp.currentToken().Data()
+	if !rdp.expectTokenType(token.IDEN) {
+		rdp.progressToNextSemicolon()
+		return
+	}
+	rdp.consume(1) // import keyword
+
+	fileN := rdp.currentToken().Literal()
+
+	if !rdp.expectTokenType(token.PERIOD) {
+		rdp.progressToNextSemicolon()
+		return
+	}
+	rdp.consume(1) // file name
+
+	if !rdp.expectTokenType(token.IDEN) {
+		rdp.progressToNextSemicolon()
+		return
+	}
+	rdp.consume(1) // period
+
+	funcN := rdp.currentToken().Literal()
+	rdp.consume(1)
+
+	stmt = ast.NewImportStatement(md, fileN, funcN)
 	return
 }
 
