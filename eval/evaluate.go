@@ -44,6 +44,7 @@ func NewEvaluator() (e *Evaluator) {
 		ast.FUNCTION_DECLARATION_STATEMENT: e.evaluateFunctionDeclarationStatement,
 		ast.FUNCTION_CALL_STATEMENT:        e.evaluateFunctionCallStatement,
 		ast.ASSIGNMENT_STATEMENT:           e.evaluateAssignmentStatement,
+		//ast.IMPORT_STATEMENT: e.evaluateImportStatement,
 	}
 
 	return
@@ -459,3 +460,9 @@ func (e *Evaluator) panic(err error) {
 	}
 	os.Exit(0)
 }
+//
+//func (e *Evaluator) evaluateImportStatement(node ast.Node) object.Object {
+//	node = node.(*ast.ImportStatement).ImportedFunctionDeclaration
+//	e.Evaluate(node)
+//	return object.NewNull()
+//}

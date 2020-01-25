@@ -37,7 +37,7 @@ func NewSemanticAnalyser() (sA *SemanticAnalyser) {
 		ast.FUNCTION_CALL_STATEMENT:        sA.analyseFunctionCallStatement,
 		ast.ASSIGNMENT_STATEMENT:           sA.analyseAssignmentStatement,
 		ast.IDENTIFIER_EXPRESSION:          sA.analyseIdentifierExpression,
-		ast.IMPORT_STATEMENT: sA.analyseImportStatement,
+		//ast.IMPORT_STATEMENT: sA.analyseImportStatement,
 	}
 
 	return
@@ -119,21 +119,21 @@ func (sA *SemanticAnalyser) analyseReturnStatement(node ast.Node) {
 	sA.Analyse(rS.Expression)
 	return
 }
-
-func (sA *SemanticAnalyser) analyseImportStatement(node ast.Node) {
-	iStmt := node.(*ast.ImportStatement)
-
-	if !sA.AvailableFunc(iStmt.ImportedFunctionDeclaration.Name) {
-		errMsg := fmt.Sprintf(internal.ImportedDeclaredFunctionErr, iStmt.ImportedFunctionDeclaration.Name)
-		sA.recordError(internal.NewError(iStmt.Metadata, errMsg, internal.SemanticErr))
-		return
-	}
-
-	// analyse func
-	sA.analyseFunctionDeclarationStatement(iStmt.ImportedFunctionDeclaration)
-
-	return
-}
+//
+//func (sA *SemanticAnalyser) analyseImportStatement(node ast.Node) {
+//	iStmt := node.(*ast.ImportStatement)
+//
+//	if !sA.AvailableFunc(iStmt.ImportedFunctionDeclaration.Name) {
+//		errMsg := fmt.Sprintf(internal.ImportedDeclaredFunctionErr, iStmt.ImportedFunctionDeclaration.Name)
+//		sA.recordError(internal.NewError(iStmt.Metadata, errMsg, internal.SemanticErr))
+//		return
+//	}
+//
+//	// analyse func
+//	sA.analyseFunctionDeclarationStatement(iStmt.ImportedFunctionDeclaration)
+//
+//	return
+//}
 
 func (sA *SemanticAnalyser) analyseIfStatement(node ast.Node) {
 	ifStmt := node.(*ast.IfStatement)

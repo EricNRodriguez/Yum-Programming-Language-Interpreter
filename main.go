@@ -13,7 +13,7 @@ func main() {
 	var (
 		l lexer.Lexer
 	)
-	f, _ := os.Open("test_files/progressive.txt")
+	f, _ := os.Open("./progressive.txt")
 	l, err := lexer.NewLexer(f)
 
 	if err != nil {
@@ -28,7 +28,10 @@ func main() {
 		os.Exit(1)
 	}
 
-	prog := p.Parse()
+	prog, errs := p.Parse()
+	for _, err := range errs {
+		fmt.Println(err)
+	}
 
 	sA := semantic.NewSemanticAnalyser()
 

@@ -30,7 +30,7 @@ type parserData struct {
 	tokBuf       []token.Token
 	currTok      token.Token
 	syntaxErrors []error
-	importPrograms map[string]*ast.Program
+	importedFunctions map[string]map[string]*ast.FunctionDeclarationStatement
 
 }
 
@@ -54,7 +54,7 @@ func newParserData(l lexer.Lexer) (parserDataInterface, error) {
 		tokBuf:       make([]token.Token, 0),
 		currTok:      cT,
 		syntaxErrors: make([]error, 0),
-		importPrograms: make(map[string]*ast.Program),
+		importedFunctions: make(map[string]map[string]*ast.FunctionDeclarationStatement),
 
 	}
 
@@ -152,36 +152,37 @@ func (pd *parserData) consumeIfStatement() {
 }
 
 func (pd *parserData) addImportedProgram(prog *ast.Program) {
+	fmt.Println(prog.FileName(), " ====== ")
 	//rex := regexp.MustCompile(`([a-zA-Z]|[0-9])+\.txt`)
 	//matches := rex.FindAllStringSubmatch(prog.FileName(), -1)
-	pd.importPrograms[prog.FileName()] = prog
 	return
 }
 
 func (pd *parserData) isImportedProgram(fName string) bool {
-	_, ok := pd.importPrograms[fName]
-	return ok
+	//_, ok := pd.importPrograms[fName]
+	//return ok
+	return false
 }
 
 // will return false if file has not been previously imported, or function doesnt exist in file
 func (pd *parserData) getImportedFunction(fileName, functionName string) (*ast.FunctionDeclarationStatement, bool) {
-	var (
-		prog *ast.Program
-		ok bool
-	)
-
-	if prog, ok = pd.importPrograms[fmt.Sprintf("./%v.txt", fileName)]; !ok {
-		return nil, false
-	}
-
-	for _, iStmt := range prog.Statements {
-		if iStmt.Type() == ast.FUNCTION_DECLARATION_STATEMENT {
-			iStmt := iStmt.(*ast.FunctionDeclarationStatement)
-			if iStmt.Name == functionName {
-				return iStmt, true
-			}
-		}
-	}
+	//var (
+	//	prog *ast.Program
+	//	ok bool
+	//)
+	//
+	//if prog, ok = pd.importPrograms[fmt.Sprintf("./%v.txt", fileName)]; !ok {
+	//	return nil, false
+	//}
+	//
+	//for _, iStmt := range prog.Statements {
+	//	if iStmt.Type() == ast.FUNCTION_DECLARATION_STATEMENT {
+	//		iStmt := iStmt.(*ast.FunctionDeclarationStatement)
+	//		if iStmt.Name == functionName {
+	//			return iStmt, true
+	//		}
+	//	}
+	//}
 
 	return nil, false
 }

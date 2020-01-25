@@ -33,9 +33,7 @@ func (p *Program) Hoist() {
 			hoistedImportStatements = append(hoistedImportStatements, p.Statements[i])
 		default:
 			remainingStatements = append(remainingStatements, p.Statements[i])
-
 		}
-
 	}
 
 	p.Statements = append(append(hoistedImportStatements, hoistedStatementsDecs...), remainingStatements...)

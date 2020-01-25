@@ -180,14 +180,14 @@ func (fds *FunctionDeclarationStatement) statementFunction() {}
 type ImportStatement struct {
 	token.Metadata
 	ImportFileName string
-	ImportedFunctionDeclaration *FunctionDeclarationStatement
+	ImportFunctionDeclaration *FunctionDeclarationStatement
 }
 
 func NewImportStatement(md token.Metadata, fileN string, fDec *FunctionDeclarationStatement) *ImportStatement {
 	return &ImportStatement{
 		Metadata: md,
 		ImportFileName: fileN,
-		ImportedFunctionDeclaration: fDec,
+		ImportFunctionDeclaration: fDec,
 	}
 }
 
@@ -196,7 +196,7 @@ func (i *ImportStatement) Type() NodeType {
 }
 
 func (i *ImportStatement) String() string {
-	return fmt.Sprintf("import %v.%v", i.ImportFileName, i.ImportedFunctionDeclaration.Name)
+	return fmt.Sprintf("import %v.%v", i.ImportFileName, i.ImportFunctionDeclaration.Name)
 }
 
 func (i *ImportStatement) statementFunction() {}

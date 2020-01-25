@@ -13,10 +13,15 @@ const (
 	// semantic errors
 	DeclaredVariableErr              = "%v already declared in current scope"
 	ReturnLocationErr                = "unable to return outside of function"
-	UndeclaredFunctionErr            = "%v not declared"
-	DeclaredFunctionErr              = "%v declared in file"
+	UndeclaredFunctionErr            = "%v is not declared function"
+	DeclaredFunctionErr              = "%v already declared in file"
 	InvalidFunctionCallParametersErr = "%v requires %v parameters, %v given"
-	UndeclaredIdentifierErr          = "%v not declared"
+	UndeclaredVariableErr          = "%v not a declared variable"
+	UnknownImportErr = "imported file %v not found"
+	InvalidFileImportErr = "invalid file %v imported | %v"
+	ImportedUndefinedFunctionErr = "imported undefined function %v.%v"
+	ImportedDeclaredFunctionErr = "%v already declared/imported"
+
 
 	// runtime errors
 	DivisionByZeroErr   = "division by zero"
