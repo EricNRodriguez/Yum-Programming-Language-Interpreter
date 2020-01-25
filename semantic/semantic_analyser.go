@@ -32,12 +32,12 @@ func NewSemanticAnalyser() (sA *SemanticAnalyser) {
 		ast.VAR_STATEMENT:                  sA.analyseVarStatement,
 		ast.RETURN_STATEMENT:               sA.analyseReturnStatement,
 		ast.IF_STATEMENT:                   sA.analyseIfStatement,
-		ast.WHILE_STATEMENT: sA.analyseWhileStatement,
+		ast.WHILE_STATEMENT:                sA.analyseWhileStatement,
 		ast.FUNCTION_DECLARATION_STATEMENT: sA.analyseFunctionDeclarationStatement,
 		ast.FUNCTION_CALL_STATEMENT:        sA.analyseFunctionCallStatement,
 		ast.ASSIGNMENT_STATEMENT:           sA.analyseAssignmentStatement,
 		ast.IDENTIFIER_EXPRESSION:          sA.analyseIdentifierExpression,
-		ast.IMPORT_STATEMENT: sA.analyseImportStatement,
+		ast.ARRAY_INDEX_EXPRESSION: sA.analyseArrayIndexExpression,
 	}
 
 	return
@@ -83,26 +83,43 @@ func (sA *SemanticAnalyser) analyseInfixExpression(node ast.Node) {
 	return
 }
 
+func (sA *SemanticAnalyser) analyseArrayIndexExpression(node ast.Node) {
+	aIExpr := node.(*ast.ArrayIndexExpression)
+	if sA.AvailableVar(aIExpr.ArrayName, true) {
+		errMsg := fmt.Sprintf(internal.UndeclaredIdentifierErr, aIExpr.ArrayName)
+		sA.recordError(internal.NewError(aIExpr.Metadata, errMsg, internal.SemanticErr))
+		return
+	}
+}
+
 func (sA *SemanticAnalyser) analyseFunctionCallExpression(node ast.Node) {
 	fCall := node.(*ast.FunctionCallExpression)
 
-	if f, ok := sA.GetUserFunc(fCall.FunctionName); !ok {
+	if uf, ok := sA.GetUserFunc(fCall.FunctionName); !ok {
 		// not a user defined func
-		if _, ok := sA.GetNativeFunc(fCall.FunctionName); !ok {
+		if nf, ok := sA.GetNativeFunc(fCall.FunctionName); !ok {
 			// not a function
 			errMsg := fmt.Sprintf(internal.UndeclaredFunctionErr, fCall.FunctionName)
 			sA.recordError(internal.NewError(fCall.Metadata, errMsg, internal.SemanticErr))
 			return
-		} else {
-			// check that native function params align up!
-		}
-	} else {
-		if len(fCall.Parameters) != len(f.Parameters) {
-			errMsg := fmt.Sprintf(internal.InvalidFunctionCallParametersErr, fCall.FunctionName, len(f.Parameters), len(fCall.Parameters))
+
+		} else if nf.NumParams != -1 && len(fCall.Parameters) != nf.NumParams {
+			// check that native function params align up
+			errMsg := fmt.Sprintf(internal.InvalidFunctionCallParametersErr, fCall.FunctionName, nf.NumParams, len(fCall.Parameters))
 			sA.recordError(internal.NewError(fCall.Metadata, errMsg, internal.SemanticErr))
 			return
+
 		}
+
+	} else if len(fCall.Parameters) != len(uf.Parameters) {
+
+		// check valid number of params
+		errMsg := fmt.Sprintf(internal.InvalidFunctionCallParametersErr, fCall.FunctionName, len(uf.Parameters), len(fCall.Parameters))
+		sA.recordError(internal.NewError(fCall.Metadata, errMsg, internal.SemanticErr))
+		return
+
 	}
+
 
 	sA.analyseBlockExpression(fCall.Parameters...)
 
@@ -115,22 +132,10 @@ func (sA *SemanticAnalyser) analyseReturnStatement(node ast.Node) {
 		sA.recordError(internal.NewError(rS.Data(), internal.ReturnLocationErr, internal.SemanticErr))
 	}
 
-	// analyse return expression
-	sA.Analyse(rS.Expression)
-	return
-}
-
-func (sA *SemanticAnalyser) analyseImportStatement(node ast.Node) {
-	iStmt := node.(*ast.ImportStatement)
-
-	if !sA.AvailableFunc(iStmt.ImportFunctionName) {
-		errMsg := fmt.Sprintf(internal.DeclaredFunctionErr, iStmt.ImportFunctionName)
-		sA.recordError(internal.NewError(iStmt.Metadata, errMsg, internal.SemanticErr))
-		return
+	if rS.Expression != nil {
+		// analyse return expression
+		sA.Analyse(rS.Expression)
 	}
-
-	// declare func name
-	sA.SetUserFunc(object.NewUserFunction(iStmt.ImportFunctionName, make([]string, 0), []ast.Statement{}))
 
 	return
 }
@@ -222,7 +227,6 @@ func (sA *SemanticAnalyser) analyseFunctionDeclarationStatement(node ast.Node) {
 
 	sA.analyseBlockStatement(fDec.Body...)
 	sA.ExitFunction()
-
 
 	return
 }

@@ -33,14 +33,14 @@ func NewEvaluator() (e *Evaluator) {
 		ast.INFIX_EXPRESSION:               e.evaluateInfixExpression,
 		ast.INTEGER_EXPRESSION:             e.evaluateIntegerExpression,
 		ast.FLOATING_POINT_EXPRESSION:      e.evaluateFloatingPointExpression,
-		ast.STRING_EXPRESSION: e.evaluateStringExpression,
+		ast.STRING_EXPRESSION:              e.evaluateStringExpression,
 		ast.BOOLEAN_EXPRESSION:             e.evaluateBooleanExpression,
 		ast.FUNC_CALL_EXPRESSION:           e.evaluateFunctionCallExpression,
 		ast.IDENTIFIER_EXPRESSION:          e.evaluateIdentifierExpression,
 		ast.VAR_STATEMENT:                  e.evaluateVarStatement,
 		ast.RETURN_STATEMENT:               e.evaluateReturnStatement,
 		ast.IF_STATEMENT:                   e.evaluateIfStatement,
-		ast.WHILE_STATEMENT: e.evaluateWhileStatement,
+		ast.WHILE_STATEMENT:                e.evaluateWhileStatement,
 		ast.FUNCTION_DECLARATION_STATEMENT: e.evaluateFunctionDeclarationStatement,
 		ast.FUNCTION_CALL_STATEMENT:        e.evaluateFunctionCallStatement,
 		ast.ASSIGNMENT_STATEMENT:           e.evaluateAssignmentStatement,
@@ -53,7 +53,8 @@ func (e *Evaluator) Evaluate(node ast.Node) (o object.Object) {
 	if method, ok := e.methodRouter[node.Type()]; ok {
 		return method(node)
 	}
-	e.panic(internal.NewError(token.NewMetatadata(node.LineNumber(), node.FileName()),
+
+	e.quit(internal.NewError(token.NewMetatadata(node.LineNumber(), node.FileName()),
 		fmt.Sprintf(internal.UnimplementedType, node.Type()), internal.InternalErr))
 	return nil
 }
@@ -87,7 +88,7 @@ func (e *Evaluator) evaluatePrefixExpression(node ast.Node) (o object.Object) {
 		case token.SUB:
 			o = object.NewInteger(-1 * rObj.Value)
 		default:
-			e.panic(internal.NewError(pExpr.Data(), fmt.Sprintf(internal.TypeErr, rObj.Literal(), object.BOOLEAN),
+			e.quit(internal.NewError(pExpr.Data(), fmt.Sprintf(internal.TypeErr, rObj.Literal(), object.BOOLEAN),
 				internal.RuntimeErr))
 		}
 
@@ -100,7 +101,7 @@ func (e *Evaluator) evaluatePrefixExpression(node ast.Node) (o object.Object) {
 		case token.SUB:
 			o = object.NewFloat(-1 * rObj.Value)
 		default:
-			e.panic(internal.NewError(pExpr.Data(), fmt.Sprintf(internal.TypeErr, rObj.Literal(), object.BOOLEAN),
+			e.quit(internal.NewError(pExpr.Data(), fmt.Sprintf(internal.TypeErr, rObj.Literal(), object.BOOLEAN),
 				internal.RuntimeErr))
 		}
 	} else if rObj.Type() == object.BOOLEAN {
@@ -110,13 +111,13 @@ func (e *Evaluator) evaluatePrefixExpression(node ast.Node) (o object.Object) {
 		case token.NEGATE:
 			o = object.NewBoolean(!rObj.Value)
 		default:
-			e.panic(internal.NewError(pExpr.Data(), fmt.Sprintf(internal.TypeErr, rObj.Literal(),
+			e.quit(internal.NewError(pExpr.Data(), fmt.Sprintf(internal.TypeErr, rObj.Literal(),
 				fmt.Sprintf("%v or %v", object.INTEGER, object.FLOAT)), internal.RuntimeErr))
 		}
 
 	} else {
 		// null object
-		e.panic(internal.NewError(pExpr.Data(), fmt.Sprintf(internal.TypeErr, rObj.Literal(),
+		e.quit(internal.NewError(pExpr.Data(), fmt.Sprintf(internal.TypeErr, rObj.Literal(),
 			fmt.Sprintf("%v or %v or %v", object.INTEGER, object.FLOAT, object.BOOLEAN)), internal.RuntimeErr))
 	}
 	return
@@ -138,7 +139,7 @@ func (e *Evaluator) evaluateInfixExpression(node ast.Node) (o object.Object) {
 			o = object.NewInteger(lObj.Value - rObj.Value)
 		case token.DIV:
 			if rObj.Value == 0 {
-				e.panic(internal.NewError(iExpr.Data(), internal.DivisionByZeroErr, internal.RuntimeErr))
+				e.quit(internal.NewError(iExpr.Data(), internal.DivisionByZeroErr, internal.RuntimeErr))
 			}
 
 			o = object.NewInteger(lObj.Value / rObj.Value)
@@ -157,7 +158,7 @@ func (e *Evaluator) evaluateInfixExpression(node ast.Node) (o object.Object) {
 		case token.NEQUAL:
 			o = object.NewBoolean(lObj.Value != rObj.Value)
 		default:
-			e.panic(internal.NewError(iExpr.Data(), fmt.Sprintf(internal.TypeOperationErr, iExpr.Token.Type(),
+			e.quit(internal.NewError(iExpr.Data(), fmt.Sprintf(internal.TypeOperationErr, iExpr.Token.Type(),
 				lObj.Type()), internal.RuntimeErr))
 			o = object.NewNull()
 		}
@@ -175,7 +176,7 @@ func (e *Evaluator) evaluateInfixExpression(node ast.Node) (o object.Object) {
 			o = object.NewFloat(lObj.Value - rObj.Value)
 		case token.DIV:
 			if rObj.Value == 0 {
-				e.panic(internal.NewError(iExpr.Data(), internal.DivisionByZeroErr, internal.RuntimeErr))
+				e.quit(internal.NewError(iExpr.Data(), internal.DivisionByZeroErr, internal.RuntimeErr))
 			}
 
 			o = object.NewFloat(lObj.Value / rObj.Value)
@@ -194,12 +195,12 @@ func (e *Evaluator) evaluateInfixExpression(node ast.Node) (o object.Object) {
 		case token.NEQUAL:
 			o = object.NewBoolean(lObj.Value != rObj.Value)
 		default:
-			e.panic(internal.NewError(iExpr.Data(), fmt.Sprintf(internal.TypeOperationErr, iExpr.Token.Type(),
+			e.quit(internal.NewError(iExpr.Data(), fmt.Sprintf(internal.TypeOperationErr, iExpr.Token.Type(),
 				lObj.Type()), internal.RuntimeErr))
 			o = object.NewNull()
 		}
 
-	} else if  lObj.Type() == object.BOOLEAN && rObj.Type() == object.BOOLEAN{
+	} else if lObj.Type() == object.BOOLEAN && rObj.Type() == object.BOOLEAN {
 		lObj := lObj.(*object.Boolean)
 		rObj := rObj.(*object.Boolean)
 		switch iExpr.Token.Type() {
@@ -212,7 +213,7 @@ func (e *Evaluator) evaluateInfixExpression(node ast.Node) (o object.Object) {
 		case token.OR:
 			o = object.NewBoolean(lObj.Value || rObj.Value)
 		default:
-			e.panic(internal.NewError(iExpr.Data(), fmt.Sprintf(internal.TypeOperationErr, iExpr.Token.Type(),
+			e.quit(internal.NewError(iExpr.Data(), fmt.Sprintf(internal.TypeOperationErr, iExpr.Token.Type(),
 				lObj.Type()), internal.RuntimeErr))
 		}
 	} else if lObj.Type() == object.STRING && rObj.Type() == object.STRING {
@@ -224,12 +225,12 @@ func (e *Evaluator) evaluateInfixExpression(node ast.Node) (o object.Object) {
 		case token.ADD:
 			o = object.NewString(lObj.Literal() + rObj.Lit)
 		default:
-			e.panic(internal.NewError(iExpr.Data(), fmt.Sprintf(internal.TypeOperationErr, iExpr.Token.Type(),
+			e.quit(internal.NewError(iExpr.Data(), fmt.Sprintf(internal.TypeOperationErr, iExpr.Token.Type(),
 				lObj.Type()), internal.RuntimeErr))
 		}
 
 	} else {
-		e.panic(internal.NewError(iExpr.Data(), fmt.Sprintf(internal.TypeOperationErr, iExpr.Literal(),
+		e.quit(internal.NewError(iExpr.Data(), fmt.Sprintf(internal.TypeOperationErr, iExpr.Literal(),
 			fmt.Sprintf("%v and %v", lObj.Type(), rObj.Type())),
 			internal.RuntimeErr))
 	}
@@ -282,20 +283,20 @@ func (e *Evaluator) evaluateArrayIndexExpression(node ast.Node) (o object.Object
 	arrE, _ := e.symbolTable.GetVar(iden.ArrayName)
 	if arrE.Type() != object.ARRAY {
 		errMsg := fmt.Sprintf(internal.TypeErr, arrE.Literal(), object.ARRAY)
-		e.panic(internal.NewError(iden.Metadata, errMsg, internal.RuntimeErr))
+		e.quit(internal.NewError(iden.Metadata, errMsg, internal.RuntimeErr))
 	}
 	arr := arrE.(*object.Array)
 
 	indE := e.Evaluate(iden.IndexExpr)
 	if indE.Type() != object.INTEGER {
 		errMsg := fmt.Sprintf(internal.TypeErr, arrE.Literal(), object.INTEGER)
-		e.panic(internal.NewError(iden.Metadata, errMsg, internal.RuntimeErr))
+		e.quit(internal.NewError(iden.Metadata, errMsg, internal.RuntimeErr))
 	}
 
 	indI := indE.(*object.Integer)
 	if indI.Value > arr.Length-1 || indI.Value < 0 {
 		// index out of bounds error
-		e.panic(internal.NewError(iden.Metadata, internal.IndexOutOfBoundsErr, internal.RuntimeErr))
+		e.quit(internal.NewError(iden.Metadata, internal.IndexOutOfBoundsErr, internal.RuntimeErr))
 	}
 
 	o = arr.Data[indI.Value]
@@ -315,7 +316,11 @@ func (e *Evaluator) evaluateBooleanExpression(node ast.Node) object.Object {
 }
 
 func (e *Evaluator) evaluateFunctionCallExpression(node ast.Node) (o object.Object) {
-	fCall := node.(*ast.FunctionCallExpression)
+	var (
+		fCall = node.(*ast.FunctionCallExpression)
+		err error
+	)
+
 	e.stackTrace.Push(fCall) // record function call
 
 	// native function call
@@ -327,7 +332,9 @@ func (e *Evaluator) evaluateFunctionCallExpression(node ast.Node) (o object.Obje
 		}
 
 		f, _ := e.symbolTable.GetNativeFunc(fCall.FunctionName)
-		o = f.Function(evalParams...)
+		if o, err = f.Function(evalParams...); err != nil {
+			e.quit(internal.NewError(fCall.Metadata, err.Error(), internal.RuntimeErr))
+		}
 
 		// user defined function
 	} else {
@@ -365,8 +372,11 @@ func (e *Evaluator) evaluateFunctionCallStatement(node ast.Node) (o object.Objec
 
 func (e *Evaluator) evaluateVarStatement(node ast.Node) object.Object {
 	vStmt := node.(*ast.VarStatement)
-	leftObj := e.Evaluate(vStmt.Expression)
-	e.symbolTable.SetVar(vStmt.Identifier.String(), leftObj)
+	value := e.Evaluate(vStmt.Expression)
+	if value.Type() == object.RETURN {
+		value = value.(*object.ReturnValue).Value
+	}
+	e.symbolTable.SetVar(vStmt.Identifier.String(), value)
 	return object.NewNull()
 }
 
@@ -378,8 +388,15 @@ func (e *Evaluator) evaluateAssignmentStatement(node ast.Node) object.Object {
 }
 
 func (e *Evaluator) evaluateReturnStatement(node ast.Node) object.Object {
+	var (
+		o object.Object
+	)
 	n := node.(*ast.ReturnStatement)
-	o := e.Evaluate(n.Expression)
+	if n.Expression != nil {
+		o = e.Evaluate(n.Expression)
+	} else {
+		o = object.NewNull()
+	}
 	return object.NewReturnValue(o)
 }
 
@@ -410,7 +427,7 @@ func (e *Evaluator) evaluateIfStatement(node ast.Node) (o object.Object) {
 		e.symbolTable.ExitScope() // exit nested scope
 
 	} else {
-		e.panic(internal.NewError(ifStmt.Metadata, internal.ConditionTypeErr, internal.RuntimeErr))
+		e.quit(internal.NewError(ifStmt.Metadata, internal.ConditionTypeErr, internal.RuntimeErr))
 	}
 	return
 }
@@ -431,7 +448,7 @@ func (e *Evaluator) evaluateWhileStatement(node ast.Node) (o object.Object) {
 		}
 
 	} else {
-		e.panic(internal.NewError(wStmt.Metadata, internal.ConditionTypeErr, internal.RuntimeErr))
+		e.quit(internal.NewError(wStmt.Metadata, internal.ConditionTypeErr, internal.RuntimeErr))
 	}
 	return
 }
@@ -447,7 +464,7 @@ func (e *Evaluator) evaluateFunctionDeclarationStatement(node ast.Node) object.O
 	return object.NewNull()
 }
 
-func (e *Evaluator) panic(err error) {
+func (e *Evaluator) quit(err error) {
 	fmt.Println(err)
 
 	fmt.Println("\nstack trace ---------- ")

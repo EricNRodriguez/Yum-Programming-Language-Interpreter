@@ -8,7 +8,7 @@ const (
 	ErrEmptyFile             = "program file is empty"
 	ErrInitParser            = "unable to initialise parser"
 	ErrInvalidStatement      = "invalid statement beginning with %v"
-	EndOfFileErr = "unexpected EOF at line %v"
+	EndOfFileErr             = "unexpected EOF at line %v"
 
 	// semantic errors
 	DeclaredVariableErr              = "%v already declared in current scope"
@@ -23,8 +23,9 @@ const (
 	TypeErr             = "%v not of type %v"
 	TypeOperationErr    = "operation %v not available for type %v"
 	IndexOutOfBoundsErr = "index out of bounds"
-	ConditionTypeErr = "condition does not evaluate to a boolean"
+	ConditionTypeErr    = "condition does not evaluate to a boolean"
 
 	// internal error
 	UnimplementedType = "unable to evaluate type %v"
+	PanicErr          = "unable to parse program, %v"
 )

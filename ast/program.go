@@ -20,9 +20,9 @@ func NewProgram(m token.Metadata, s ...Statement) *Program {
 // moves imports, followed by func declarations to the start of the program
 func (p *Program) Hoist() {
 	var (
-		hoistedStatementsDecs = make([]Statement, 0)
+		hoistedStatementsDecs   = make([]Statement, 0)
 		hoistedImportStatements = make([]Statement, 0)
-		remainingStatements = make([]Statement, 0)
+		remainingStatements     = make([]Statement, 0)
 	)
 
 	for i := range p.Statements {

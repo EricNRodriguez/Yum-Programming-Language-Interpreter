@@ -15,9 +15,9 @@ type parserDataInterface interface {
 	checkNextToken() bool
 	recordError(error)
 	errors() []error
-	progressToNextSemicolon()
-	consumeIfStatement()
 	consumeBlockStatement()
+	consumeProgram()
+	consumeStatement()
 }
 
 type parserData struct {
@@ -105,12 +105,6 @@ func (pd *parserData) errors() []error {
 	return pd.syntaxErrors
 }
 
-func (pd *parserData) progressToNextSemicolon() {
-	for pd.currTok.Type() != token.SEMICOLON && pd.currTok.Type() != token.EOF {
-		pd.consume(1)
-	}
-}
-
 // need to update to account for nested block statement s
 func (pd *parserData) consumeBlockStatement() {
 	for pd.currentToken().Type() != token.RBRACE {
@@ -140,4 +134,22 @@ func (pd *parserData) consumeIfStatement() {
 	}
 
 	return
+}
+
+func (pd *parserData) consumeProgram() {
+	pd.currTok = pd.tokBuf[len(pd.tokBuf)-2]
+	pd.tokBuf = pd.tokBuf[len(pd.tokBuf)-1:len(pd.tokBuf)]
+	return
+}
+
+func (pd *parserData) consumeStatement() {
+	for pd.currentToken().Type() != token.SEMICOLON && pd.currentToken().Type() != token.LBRACE &&
+		pd.currentToken().Type() != token.EOF {
+		pd.consume(1)
+	}
+
+	if pd.currentToken().Type() == token.LBRACE {
+		pd.consumeIfStatement()
+	}
+
 }

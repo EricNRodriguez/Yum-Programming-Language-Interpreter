@@ -61,7 +61,11 @@ func NewReturnStatment(t token.Token, e Expression) *ReturnStatement {
 }
 
 func (r *ReturnStatement) String() string {
-	return fmt.Sprintf("return %v;", r.Expression.String())
+	if r.Expression == nil {
+		return fmt.Sprintf("return;")
+	} else {
+		return fmt.Sprintf("return %v;", r.Expression.String())
+	}
 }
 
 func (r *ReturnStatement) Type() NodeType {
@@ -121,18 +125,17 @@ func (ifs *IfStatement) Type() NodeType {
 
 func (ifs *IfStatement) statementFunction() {}
 
-
 type WhileStatement struct {
 	token.Metadata
 	Condition Expression // Should make a boolean expression type to classify expressions with conditionals
-	Block []Statement
+	Block     []Statement
 }
 
 func NewWhileStatement(md token.Metadata, c Expression, b []Statement) *WhileStatement {
 	return &WhileStatement{
-		Metadata: md,
+		Metadata:  md,
 		Condition: c,
-		Block: b,
+		Block:     b,
 	}
 }
 
@@ -177,31 +180,6 @@ func (fds *FunctionDeclarationStatement) Type() NodeType {
 
 func (fds *FunctionDeclarationStatement) statementFunction() {}
 
-type ImportStatement struct {
-	token.Metadata
-	ImportFileName string
-	ImportFunctionName string
-}
-
-func NewImportStatement(md token.Metadata, fileN string, funcN string) *ImportStatement {
-	return &ImportStatement{
-		Metadata: md,
-		ImportFileName: fileN,
-		ImportFunctionName: funcN,
-	}
-}
-
-func (i *ImportStatement) Type() NodeType {
-	return IMPORT_STATEMENT
-}
-
-func (i *ImportStatement) String() string {
-	return fmt.Sprintf("import %v.%v", i.ImportFileName, i.ImportFunctionName)
-}
-
-func (i *ImportStatement) statementFunction() {}
-
-
 func statementArrayToString(staArr []Statement) string {
 	var strArr = make([]string, len(staArr))
 	for i, sta := range staArr {
@@ -209,5 +187,3 @@ func statementArrayToString(staArr []Statement) string {
 	}
 	return strings.Join(strArr, " ")
 }
-
-

@@ -23,7 +23,7 @@ func (oT ObjectType) String() string {
 	case STRING:
 		return "STRING"
 	default:
-		return "<UNKNOWN TYPE>"
+		return "UNKNOWN TYPE"
 
 	}
 }

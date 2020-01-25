@@ -1,15 +1,22 @@
-sayhello();
 
+def hello(a,b,c) {
+    fmt.Println(1,2,3);
+    return 7;
+};
+
+while (x > 2) {
+    print();
+
+};
 
 func hello(a,b,c) {
-    return a + b + c;
+    fmt.Println(1,2,3);
+    return 7;
 };
 
-func sayhello() {
-    print("hello guys");
-};
+var x = (1,2)
 
+var u = 22;
 
-import jello.hello;
+print(u);
 
-print(3456);

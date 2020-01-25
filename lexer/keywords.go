@@ -10,7 +10,7 @@ var keywords = map[string]token.TokenType{
 	"return": token.RETURN,
 	"true":   token.BOOLEAN,
 	"false":  token.BOOLEAN,
-	"while": token.WHILE,
+	"while":  token.WHILE,
 	"import": token.IMPORT,
 }
 

@@ -2,9 +2,9 @@ package main
 
 import (
 	"Yum-Programming-Language-Interpreter/eval"
+	"Yum-Programming-Language-Interpreter/semantic"
 	"Yum-Programming-Language-Interpreter/lexer"
 	"Yum-Programming-Language-Interpreter/parser"
-	"Yum-Programming-Language-Interpreter/semantic"
 	"fmt"
 	"os"
 )
@@ -13,6 +13,7 @@ func main() {
 	var (
 		l lexer.Lexer
 	)
+
 	f, _ := os.Open("test_files/progressive.txt")
 	l, err := lexer.NewLexer(f)
 
@@ -43,6 +44,5 @@ func main() {
 	if len(sA.SemanticErrors()) == 0 {
 		evalu.Evaluate(prog)
 	}
-
 
 }

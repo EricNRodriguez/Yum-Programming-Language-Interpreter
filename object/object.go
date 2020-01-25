@@ -8,6 +8,11 @@ import (
 )
 
 // CACHE TRUE FALSE AND NULL
+var (
+	TrueConst  = &Boolean{Value: true}
+	FalseConst = &Boolean{Value: false}
+	NullConst  = &Null{}
+)
 
 type Object interface {
 	Type() ObjectType
@@ -100,8 +105,10 @@ func (f *Float) Literal() string {
 }
 
 func NewBoolean(b bool) *Boolean {
-	return &Boolean{
-		Value: b,
+	if b {
+		return TrueConst
+	} else {
+		return FalseConst
 	}
 }
 
@@ -116,7 +123,7 @@ func (b *Boolean) Literal() string {
 type Null struct{}
 
 func NewNull() *Null {
-	return &Null{}
+	return NullConst
 }
 
 func (n *Null) Type() ObjectType {
@@ -174,14 +181,16 @@ func (f *UserFunction) Literal() string {
 }
 
 type NativeFunction struct {
-	Name     string
-	Function func(args ...Object) Object
+	Name      string
+	NumParams int // -1 for variadic
+	Function  func(args ...Object) (Object, error)
 }
 
-func NewNativeFunction(n string, f func(args ...Object) Object) *NativeFunction {
+func NewNativeFunction(n string, nPs int, f func(args ...Object) (Object, error)) *NativeFunction {
 	return &NativeFunction{
-		Name:     n,
-		Function: f,
+		Name:      n,
+		NumParams: nPs,
+		Function:  f,
 	}
 }
 

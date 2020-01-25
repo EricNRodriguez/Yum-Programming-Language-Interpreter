@@ -179,7 +179,7 @@ type StringExpression struct {
 func NewStringExpression(md token.Metadata, l string) *StringExpression {
 	return &StringExpression{
 		Metadata: md,
-		Literal: l}
+		Literal:  l}
 }
 
 func (s *StringExpression) String() string {
@@ -191,7 +191,6 @@ func (s *StringExpression) Type() NodeType {
 }
 
 func (s *StringExpression) expressionFunction() {}
-
 
 type ArrayExpression struct {
 	token.Metadata

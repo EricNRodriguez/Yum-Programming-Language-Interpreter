@@ -1,14 +1,33 @@
 package object
 
-import "fmt"
+import (
+	"Yum-Programming-Language-Interpreter/internal"
+	"errors"
+	"fmt"
+)
 
-var NativeFunctions = map[string]*NativeFunction{
-	yumPrint.Name: yumPrint,
-}
+var (
+	print = NewNativeFunction("print", -1, func(os ...Object) (o Object, err error) {
+		for _, o := range os {
+			fmt.Println(o.Literal())
+		}
+		return NewNull(), nil
+	})
 
-var yumPrint = NewNativeFunction("print", func(os ...Object) Object {
-	for _, o := range os {
-		fmt.Println(o.Literal())
+	length = NewNativeFunction("length", 1, func(o ...Object) (l Object, err error) {
+		if o[0].Type() != ARRAY {
+			err = errors.New(fmt.Sprintf(internal.TypeErr, o[0].Type(), ARRAY))
+			return
+		}
+		arr := o[0].(*Array)
+		l = NewInteger(arr.Length)
+		return
+	})
+
+	NativeFunctions = map[string]*NativeFunction{
+		print.Name: print,
+		length.Name: length,
 	}
-	return NewNull()
-})
+
+)
+
