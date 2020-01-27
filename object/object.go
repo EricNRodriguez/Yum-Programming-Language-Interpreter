@@ -7,7 +7,6 @@ import (
 	"strings"
 )
 
-// CACHE TRUE FALSE AND NULL
 var (
 	TrueConst  = &Boolean{Value: true}
 	FalseConst = &Boolean{Value: false}
@@ -30,7 +29,7 @@ func NewInteger(i int64) *Integer {
 }
 
 func (i *Integer) Type() ObjectType {
-	return INTEGER
+	return IntegerObject
 }
 
 func (i *Integer) Literal() string {
@@ -48,30 +47,30 @@ func NewString(l string) *String {
 }
 
 func (s *String) Type() ObjectType {
-	return STRING
+	return StringObject
 }
 
 func (s *String) Literal() string {
-	return s.Lit
+	return fmt.Sprintf("\"%v\"", s.Lit)
 }
 
-type Array struct {
+type ArrayNode struct {
 	Data   []Object
 	Length int64
 }
 
-func NewArray(d []Object) *Array {
-	return &Array{
+func NewArrayNode(d []Object) *ArrayNode {
+	return &ArrayNode{
 		Data:   d,
 		Length: int64(len(d)),
 	}
 }
 
-func (a *Array) Type() ObjectType {
-	return ARRAY
+func (a *ArrayNode) Type() ObjectType {
+	return ArrayObject
 }
 
-func (a *Array) Literal() string {
+func (a *ArrayNode) Literal() string {
 	buff := bytes.Buffer{}
 	buff.WriteString("[")
 	for i, o := range a.Data {
@@ -97,7 +96,7 @@ func NewFloat(f float64) *Float {
 }
 
 func (f *Float) Type() ObjectType {
-	return FLOAT
+	return FloatingPointObject
 }
 
 func (f *Float) Literal() string {
@@ -113,7 +112,7 @@ func NewBoolean(b bool) *Boolean {
 }
 
 func (b *Boolean) Type() ObjectType {
-	return BOOLEAN
+	return BooleanObject
 }
 
 func (b *Boolean) Literal() string {
@@ -127,7 +126,7 @@ func NewNull() *Null {
 }
 
 func (n *Null) Type() ObjectType {
-	return NULL
+	return NullObject
 }
 
 func (n *Null) Literal() string {
@@ -145,7 +144,7 @@ func NewReturnValue(o Object) *ReturnValue {
 }
 
 func (r *ReturnValue) Type() ObjectType {
-	return RETURN
+	return ReturnObject
 }
 
 func (r *ReturnValue) Literal() string {
@@ -167,7 +166,7 @@ func NewUserFunction(n string, params []string, body []ast.Statement) *UserFunct
 }
 
 func (f *UserFunction) Type() ObjectType {
-	return USER_FUNCTION
+	return UserFunctionObject
 }
 
 func (f *UserFunction) Literal() string {
@@ -195,7 +194,7 @@ func NewNativeFunction(n string, nPs int, f func(args ...Object) (Object, error)
 }
 
 func (nf *NativeFunction) Type() ObjectType {
-	return NATIVE_FUNCTION
+	return NativeFunctionObject
 }
 
 func (nf *NativeFunction) Literal() string {

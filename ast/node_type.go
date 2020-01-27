@@ -1,74 +1,24 @@
 package ast
 
-type NodeType int
-
-func (nt NodeType) String() string {
-	switch nt {
-	case PROGRAM:
-		return "PROGRAM"
-	case IDENTIFIER:
-		return "IDENTIFIER"
-	case PREFIX_EXPRESSION:
-		return "PREFIX EXPRESSION"
-	case INFIX_EXPRESSION:
-		return "INFIX EXPRESSION"
-	case IDENTIFIER_EXPRESSION:
-		return "IDENTIFIER EXPRESSION"
-	case INTEGER_EXPRESSION:
-		return "INTEGER EXPRESSION"
-	case BOOLEAN_EXPRESSION:
-		return "BOOLEAN EXPRESSION"
-	case FLOATING_POINT_EXPRESSION:
-		return "FLOATING POINT EXPRESSION"
-	case VAR_STATEMENT:
-		return "VAR STATEMENT"
-	case FUNC_CALL_EXPRESSION:
-		return "FUNCTION CALL EXPRESSION"
-	case FUNCTION_CALL_STATEMENT:
-		return "FUNCTION CALL STATEMENT"
-	case FUNCTION_DECLARATION_STATEMENT:
-		return "FUNCTION DECLARATION STATEMENT"
-	case ASSIGNMENT_STATEMENT:
-		return "ASSIGNMENT STATEMENT"
-	case RETURN_STATEMENT:
-		return "RETURN STATEMENT"
-	case ARRAY:
-		return "ARRAY"
-	case ARRAY_INDEX_EXPRESSION:
-		return "ARRAY INDEX EXPRESSION"
-	case IF_STATEMENT:
-		return "IF STATEMENT"
-	case STRING_EXPRESSION:
-		return "STRING EXPRESSION"
-	case WHILE_STATEMENT:
-		return "WHILE STATEMENT"
-	case IMPORT_STATEMENT:
-		return "IMPORT STATEMENT"
-	default:
-		return "UNKNOWN TYPE"
-
-	}
-}
+type NodeType string
 
 const (
-	PROGRAM NodeType = iota
-	IDENTIFIER
-	ARRAY
-	ARRAY_INDEX_EXPRESSION
-	PREFIX_EXPRESSION
-	INFIX_EXPRESSION
-	INTEGER_EXPRESSION
-	FLOATING_POINT_EXPRESSION
-	STRING_EXPRESSION
-	BOOLEAN_EXPRESSION
-	FUNC_CALL_EXPRESSION
-	IDENTIFIER_EXPRESSION
-	VAR_STATEMENT
-	ASSIGNMENT_STATEMENT
-	RETURN_STATEMENT
-	WHILE_STATEMENT
-	IF_STATEMENT
-	FUNCTION_DECLARATION_STATEMENT
-	FUNCTION_CALL_STATEMENT
-	IMPORT_STATEMENT
+	ProgramNode                      = "program expression"
+	IdentifierExpressionNode         = "identifier expression"
+	ArrayExpressionNode              = "array expression"
+	ArrayIndexExpressionNode         = "array index expression"
+	PrefixExpressionNode             = "prefix expression"
+	InfixExpressionNode              = "infix expression"
+	IntegerExpressionNode            = "integer expression"
+	FloatingPointExpressionNode      = "floating point expression"
+	StringExpressionNode             = "string expression"
+	BooleanExpressionNode            = "boolean expression"
+	FunctionCallExpressionNode       = "function call expression"
+	VarStatementNode                 = "variable declaration statement"
+	AssignmentStatementNode          = "assignment statement"
+	ReturnStatementNode              = "return statement"
+	WhileStatementNode               = "while statement"
+	IfStatementNode                  = "if statement"
+	FunctionDeclarationStatementNode = "function declaration statement"
+	FunctionCallStatementNode        = "function call statement"
 )

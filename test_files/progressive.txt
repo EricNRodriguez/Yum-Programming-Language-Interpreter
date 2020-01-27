@@ -1,22 +1,26 @@
+func fact(n) {
+    if (n == 1) {
+        return 1;
+    };
 
-def hello(a,b,c) {
-    fmt.Println(1,2,3);
-    return 7;
+    return n * fact(n-1);
 };
 
-while (x > 2) {
-    print();
+print(fact(65));
 
-};
+var u = 93;
+var u2 = u == 22;
+print(u2);
 
 func hello(a,b,c) {
-    fmt.Println(1,2,3);
-    return 7;
+    while (a < 20) {
+        if (b) {
+            print(b & c);
+        } else {
+            print(c);
+        };
+    a = a + 1;
+    };
 };
 
-var x = (1,2)
-
-var u = 22;
-
-print(u);
-
+hello(18,true,"eric");

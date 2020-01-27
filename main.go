@@ -1,10 +1,12 @@
 package main
 
 import (
+	"Yum-Programming-Language-Interpreter/ast"
 	"Yum-Programming-Language-Interpreter/eval"
-	"Yum-Programming-Language-Interpreter/semantic"
+	"Yum-Programming-Language-Interpreter/internal"
 	"Yum-Programming-Language-Interpreter/lexer"
 	"Yum-Programming-Language-Interpreter/parser"
+	"Yum-Programming-Language-Interpreter/semantic"
 	"fmt"
 	"os"
 )
@@ -12,37 +14,49 @@ import (
 func main() {
 	var (
 		l lexer.Lexer
+		f *os.File
+		p parser.Parser
+		prog ast.Node
+		sA semantic.SemanticAnalyser
+		e eval.Evaluator
+		err error
+		errs []error
 	)
 
-	f, _ := os.Open("test_files/progressive.txt")
-	l, err := lexer.NewLexer(f)
-
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+	if f, err = os.Open("test_files/progressive.txt"); err != nil {
+		fmt.Println(fmt.Sprintf(internal.ErrFailedToReadFile, "test_files/progressive.txt", err))
+		os.Exit(0)
 	}
+
+	if l, err = lexer.NewLexer(f); err != nil {
+		fmt.Println(err)
+		os.Exit(0)
+	}
+
 	defer l.Close()
 
-	p, err := parser.NewRecursiveDescentParser(l)
-	if err != nil {
+	if p, err = parser.NewRecursiveDescentParser(l); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 
-	prog := p.Parse()
-
-	sA := semantic.NewSemanticAnalyser()
-
-	sA.Analyse(prog)
-
-	for _, e := range sA.SemanticErrors() {
-		fmt.Println(e)
+	if prog, errs = p.Parse(); errs != nil && len(errs) != 0 {
+		for _, e := range errs {
+			fmt.Println(e)
+		}
+		os.Exit(0)
 	}
 
-	//fmt.Println(prog.String())
-	evalu := eval.NewEvaluator()
-	if len(sA.SemanticErrors()) == 0 {
-		evalu.Evaluate(prog)
+	sA = semantic.NewSemanticAnalyser()
+
+	if errs = sA.Analyse(prog); errs != nil && len(errs) != 0 {
+		for _, e := range errs {
+			fmt.Println(e)
+		}
 	}
+
+	e = eval.NewEvaluator()
+	e.Evaluate(prog)
+
 
 }

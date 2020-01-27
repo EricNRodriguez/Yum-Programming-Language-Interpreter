@@ -5,28 +5,13 @@ import (
 	"fmt"
 )
 
-type ErrorType int
-
-func (eT ErrorType) Name() string {
-	switch eT {
-	case SyntaxErr:
-		return "SYNTAX ERROR"
-	case RuntimeErr:
-		return "RUNTIME ERROR"
-	case InternalErr:
-		return "INTERNAL PROGRAM ERROR"
-	case SemanticErr:
-		return "SEMANTIC ERROR"
-	default:
-		return "UNKNOWN ERROR TYPE"
-	}
-}
+type ErrorType string
 
 const (
-	SyntaxErr ErrorType = iota
-	RuntimeErr
-	SemanticErr
-	InternalErr
+	SyntaxErr ErrorType = "syntax error"
+	RuntimeErr ErrorType = "runtime error"
+	SemanticErr ErrorType = "semantic error"
+	InternalErr ErrorType = "internal error"
 )
 
 type Error struct {
@@ -40,7 +25,7 @@ func NewError(md token.Metadata, msg string, code ErrorType) *Error {
 }
 
 func (e *Error) Error() string {
-	return fmt.Sprintf("%v %v %v | %v", e.Type().Name(), e.Metadata.FileName(), e.Metadata.LineNumber(), e.msg)
+	return fmt.Sprintf("%v %v %v | %v", e.Type(), e.Metadata.FileName(), e.Metadata.LineNumber(), e.msg)
 }
 
 func (e *Error) Type() ErrorType {

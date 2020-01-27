@@ -3,58 +3,56 @@ package token
 type TokenType string
 
 const (
-	EOF     TokenType = "EOF"
-	ILLEGAL TokenType = "ILLEGAL"
+	EOFToken     TokenType = "EOF"
+	IllegalToken TokenType = "illegal token"
 
-	FUNC   TokenType = "FUNC"
-	VAR    TokenType = "VAR"
-	IF     TokenType = "IF"
-	ELSE   TokenType = "ELSE"
-	RETURN TokenType = "RETURN"
-	WHILE  TokenType = "WHILE"
-	IMPORT TokenType = "IMPORT"
+	FuncToken   TokenType = "FUNC"
+	VarToken    TokenType = "VAR"
+	IfToken     TokenType = "IF"
+	ElseToken   TokenType = "ELSE"
+	ReturnToken TokenType = "RETURN"
+	WhileToken  TokenType = "WHILE"
 
 	// Arithmetic operations
-	ADD     TokenType = "+"
-	SUB     TokenType = "-"
-	DIV     TokenType = "/"
-	MULT    TokenType = "*"
-	GTHAN   TokenType = ">"
-	GTEQUAL TokenType = ">="
-	LTHAN   TokenType = "<"
-	LTEQUAL TokenType = "<="
+	AddToken        TokenType = "+"
+	SubToken        TokenType = "-"
+	DivToken        TokenType = "/"
+	MultToken       TokenType = "*"
+	GThanToken      TokenType = ">"
+	GThanEqualToken TokenType = ">="
+	LThanToken      TokenType = "<"
+	LThanEqualToken TokenType = "<="
 
 	// boolean operators
-	NEGATE TokenType = "!"
-	AND    TokenType = "&"
-	OR     TokenType = "|"
+	NegateToken TokenType = "!"
+	AndToken    TokenType = "&"
+	OrToken     TokenType = "|"
 
 	// general operators
-	ASSIGN TokenType = "="
-	EQUAL  TokenType = "=="
-	NEQUAL TokenType = "!="
+	AssignToken   TokenType = "="
+	EqualToken    TokenType = "=="
+	NotEqualToken TokenType = "!="
 
 	// delimiters
-	SEMICOLON TokenType = ";"
-	COMMA     TokenType = ","
+	SemicolonToken TokenType = ";"
+	CommaToken     TokenType = ","
 
-	LPAREN TokenType = "("
-	RPAREN TokenType = ")"
+	LeftParenToken  TokenType = "("
+	RightParenToken TokenType = ")"
 
-	LBRACE TokenType = "{"
-	RBRACE TokenType = "}"
+	LeftBraceToken  TokenType = "{"
+	RightBraceToken TokenType = "}"
 
-	LBRACKET TokenType = "["
-	RBRACKET TokenType = "]"
+	LeftBracketToken  TokenType = "["
+	RightBracketToken TokenType = "]"
 
-	PERIOD TokenType = "."
+	PeriodToken TokenType = "."
 
 	// string
-	QUOTATION_MARK TokenType = "\""
+	QuotationMarkToken TokenType = "\""
 
-	IDEN    TokenType = "IDENTIFIER"
-	INT     TokenType = "INT"
-	FLOAT   TokenType = "FLOAT"
-	BOOLEAN TokenType = "BOOL"
-	STRING  TokenType = "STRING"
+	IdentifierToken    TokenType = "identifier"
+	IntegerToken       TokenType = "integer"
+	FloatingPointToken TokenType = "floating point number"
+	BooleanToken       TokenType = "boolean"
 )

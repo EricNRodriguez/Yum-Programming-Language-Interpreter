@@ -66,7 +66,7 @@ func (l *lexer) validVariableNameCharacter(b byte) bool {
 	return (b >= 65 && b <= 90) || (b >= 97 && b <= 122) || (b >= 48 && b <= 57)
 }
 
-func (l *lexer) readIdentifier() (idt []byte) {
+func (l *lexer) readIdentifierNode() (idt []byte) {
 	idt = make([]byte, 0)
 
 	// ascii characters
@@ -90,12 +90,12 @@ func (l *lexer) readInt() string {
 
 func (l *lexer) readNumber() (num string, ty token.TokenType) {
 	num = l.readInt()
-	ty = token.INT
+	ty = token.IntegerToken
 
 	if l.currentLineIndex < len(l.currentLine) && l.currentLine[l.currentLineIndex] == 46 {
 		l.currentLineIndex++
 		num = fmt.Sprintf("%v.%v", num, l.readInt())
-		ty = token.FLOAT
+		ty = token.FloatingPointToken
 	}
 	return
 }
@@ -120,7 +120,7 @@ func (l *lexer) NextToken() (t token.Token, err error) {
 
 		// if EOF
 		if err != nil {
-			t = token.NewToken(token.EOF, "EOF", l.currentLineNumber, l.fileName)
+			t = token.NewToken(token.EOFToken, "EOF", l.currentLineNumber, l.fileName)
 			return
 		} else {
 			// begin parsing new line
@@ -147,91 +147,91 @@ func (l *lexer) NextToken() (t token.Token, err error) {
 	}
 
 	switch token.TokenType(s) {
-	case token.ADD:
-		t = token.NewToken(token.ADD, s, l.currentLineNumber, l.fileName)
-	case token.SUB:
-		t = token.NewToken(token.SUB, s, l.currentLineNumber, l.fileName)
-	case token.DIV:
-		t = token.NewToken(token.DIV, s, l.currentLineNumber, l.fileName)
-	case token.MULT:
-		t = token.NewToken(token.MULT, s, l.currentLineNumber, l.fileName)
-	case token.ASSIGN:
+	case token.AddToken:
+		t = token.NewToken(token.AddToken, s, l.currentLineNumber, l.fileName)
+	case token.SubToken:
+		t = token.NewToken(token.SubToken, s, l.currentLineNumber, l.fileName)
+	case token.DivToken:
+		t = token.NewToken(token.DivToken, s, l.currentLineNumber, l.fileName)
+	case token.MultToken:
+		t = token.NewToken(token.MultToken, s, l.currentLineNumber, l.fileName)
+	case token.AssignToken:
 		tt, _ := l.trailingTerminal()
 		switch tt {
-		case token.ASSIGN:
-			t = token.NewToken(token.EQUAL, s+s, l.currentLineNumber, l.fileName)
+		case token.AssignToken:
+			t = token.NewToken(token.EqualToken, s+s, l.currentLineNumber, l.fileName)
 		default:
 			// shift back, unread trailing terminal
 			l.currentLineIndex--
-			t = token.NewToken(token.ASSIGN, s, l.currentLineNumber, l.fileName)
+			t = token.NewToken(token.AssignToken, s, l.currentLineNumber, l.fileName)
 		}
-	case token.NEGATE:
+	case token.NegateToken:
 		tt, _ := l.trailingTerminal()
 		switch tt {
-		case token.ASSIGN:
-			t = token.NewToken(token.NEQUAL, s+string(tt), l.currentLineNumber, l.fileName)
+		case token.AssignToken:
+			t = token.NewToken(token.NotEqualToken, s+string(tt), l.currentLineNumber, l.fileName)
 		default:
 			// shift back, unread trailing terminal
 			l.currentLineIndex--
-			t = token.NewToken(token.NEGATE, s, l.currentLineNumber, l.fileName)
+			t = token.NewToken(token.NegateToken, s, l.currentLineNumber, l.fileName)
 		}
 
-	case token.GTHAN:
+	case token.GThanToken:
 		tt, _ := l.trailingTerminal()
 		switch tt {
-		case token.ASSIGN:
-			t = token.NewToken(token.GTEQUAL, s+string(tt), l.currentLineNumber, l.fileName)
+		case token.AssignToken:
+			t = token.NewToken(token.GThanEqualToken, s+string(tt), l.currentLineNumber, l.fileName)
 		default:
 			// shift back, unread trailing terminal
 			l.currentLineIndex--
-			t = token.NewToken(token.GTHAN, s, l.currentLineNumber, l.fileName)
+			t = token.NewToken(token.GThanToken, s, l.currentLineNumber, l.fileName)
 		}
-	case token.LTHAN:
+	case token.LThanToken:
 		tt, _ := l.trailingTerminal()
 		switch tt {
-		case token.ASSIGN:
-			t = token.NewToken(token.LTEQUAL, s+string(tt), l.currentLineNumber, l.fileName)
+		case token.AssignToken:
+			t = token.NewToken(token.LThanEqualToken, s+string(tt), l.currentLineNumber, l.fileName)
 		default:
 			// shift back, unread trailing terminal
 			l.currentLineIndex--
-			t = token.NewToken(token.LTHAN, s, l.currentLineNumber, l.fileName)
+			t = token.NewToken(token.LThanToken, s, l.currentLineNumber, l.fileName)
 		}
-	case token.SEMICOLON:
-		t = token.NewToken(token.SEMICOLON, s, l.currentLineNumber, l.fileName)
-	case token.COMMA:
-		t = token.NewToken(token.COMMA, s, l.currentLineNumber, l.fileName)
-	case token.QUOTATION_MARK:
-		t = token.NewToken(token.QUOTATION_MARK, s, l.currentLineNumber, l.fileName)
+	case token.SemicolonToken:
+		t = token.NewToken(token.SemicolonToken, s, l.currentLineNumber, l.fileName)
+	case token.CommaToken:
+		t = token.NewToken(token.CommaToken, s, l.currentLineNumber, l.fileName)
+	case token.QuotationMarkToken:
+		t = token.NewToken(token.QuotationMarkToken, s, l.currentLineNumber, l.fileName)
 		l.ignoreSpace = !l.ignoreSpace // allow strings to have white spaces
-	case token.PERIOD:
-		t = token.NewToken(token.PERIOD, s, l.currentLineNumber, l.fileName)
-	case token.LPAREN:
-		t = token.NewToken(token.LPAREN, s, l.currentLineNumber, l.fileName)
-	case token.RPAREN:
-		t = token.NewToken(token.RPAREN, s, l.currentLineNumber, l.fileName)
-	case token.LBRACE:
-		t = token.NewToken(token.LBRACE, s, l.currentLineNumber, l.fileName)
-	case token.RBRACE:
-		t = token.NewToken(token.RBRACE, s, l.currentLineNumber, l.fileName)
-	case token.LBRACKET:
-		t = token.NewToken(token.LBRACKET, s, l.currentLineNumber, l.fileName)
-	case token.RBRACKET:
-		t = token.NewToken(token.RBRACKET, s, l.currentLineNumber, l.fileName)
-	case token.AND:
-		t = token.NewToken(token.AND, s, l.currentLineNumber, l.fileName)
-	case token.OR:
-		t = token.NewToken(token.OR, s, l.currentLineNumber, l.fileName)
-	case token.RETURN:
-		t = token.NewToken(token.RETURN, s, l.currentLineNumber, l.fileName)
+	case token.PeriodToken:
+		t = token.NewToken(token.PeriodToken, s, l.currentLineNumber, l.fileName)
+	case token.LeftParenToken:
+		t = token.NewToken(token.LeftParenToken, s, l.currentLineNumber, l.fileName)
+	case token.RightParenToken:
+		t = token.NewToken(token.RightParenToken, s, l.currentLineNumber, l.fileName)
+	case token.LeftBraceToken:
+		t = token.NewToken(token.LeftBraceToken, s, l.currentLineNumber, l.fileName)
+	case token.RightBraceToken:
+		t = token.NewToken(token.RightBraceToken, s, l.currentLineNumber, l.fileName)
+	case token.LeftBracketToken:
+		t = token.NewToken(token.LeftBracketToken, s, l.currentLineNumber, l.fileName)
+	case token.RightBracketToken:
+		t = token.NewToken(token.RightBracketToken, s, l.currentLineNumber, l.fileName)
+	case token.AndToken:
+		t = token.NewToken(token.AndToken, s, l.currentLineNumber, l.fileName)
+	case token.OrToken:
+		t = token.NewToken(token.OrToken, s, l.currentLineNumber, l.fileName)
+	case token.ReturnToken:
+		t = token.NewToken(token.ReturnToken, s, l.currentLineNumber, l.fileName)
 
 	default:
 		// account for token literals, integers and illegal tokens
 
 		l.currentLineIndex -= 1
 
-		// recognise keywords, booleans and identifiers
+		// recognise keywords, booleans and IdentifierNodes
 		if l.validVariableNameStartCharacter(l.currentLine[l.currentLineIndex]) {
-			idt := string(l.readIdentifier())
+			idt := string(l.readIdentifierNode())
 			idtType := classifyTokenLiteral(idt)
 			t = token.NewToken(idtType, idt, l.currentLineNumber, l.fileName)
 
@@ -242,7 +242,7 @@ func (l *lexer) NextToken() (t token.Token, err error) {
 
 		} else {
 			l.currentLineIndex++
-			t = token.NewToken(token.ILLEGAL, s, l.currentLineNumber, l.fileName)
+			t = token.NewToken(token.IllegalToken, s, l.currentLineNumber, l.fileName)
 		}
 	}
 	return

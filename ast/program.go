@@ -17,28 +17,23 @@ func NewProgram(m token.Metadata, s ...Statement) *Program {
 	}
 }
 
-// moves imports, followed by func declarations to the start of the program
+// moves imports, followed by func declarations to the start of the ProgramNode
 func (p *Program) Hoist() {
 	var (
-		hoistedStatementsDecs   = make([]Statement, 0)
-		hoistedImportStatements = make([]Statement, 0)
-		remainingStatements     = make([]Statement, 0)
+		hoistedStatementsDecs = make([]Statement, 0)
+		remainingStatements   = make([]Statement, 0)
 	)
 
 	for i := range p.Statements {
-		switch p.Statements[i].Type() {
-		case FUNCTION_DECLARATION_STATEMENT:
+		if p.Statements[i].Type() == FunctionDeclarationStatementNode {
 			hoistedStatementsDecs = append(hoistedStatementsDecs, p.Statements[i])
-		case IMPORT_STATEMENT:
-			hoistedImportStatements = append(hoistedImportStatements, p.Statements[i])
-		default:
+		} else {
 			remainingStatements = append(remainingStatements, p.Statements[i])
-
 		}
 
 	}
 
-	p.Statements = append(append(hoistedImportStatements, hoistedStatementsDecs...), remainingStatements...)
+	p.Statements = append(hoistedStatementsDecs, remainingStatements...)
 	return
 }
 
@@ -53,5 +48,5 @@ func (p *Program) String() string {
 }
 
 func (p *Program) Type() NodeType {
-	return PROGRAM
+	return ProgramNode
 }

@@ -1,21 +1,8 @@
 - write test cases for everything
-- make identifier identifier expression
 
-- clean up the error names and all variable names in the program
 - document functions
-
-- implement native len and isnull function
-
-
-- should return from the parser after encountering a invalid statement
-
-
-Design decision:
-- ignoring overflow errors
 
 
 ERRORS:
-- not the best error message when the thing expects a function call but is given a while loop
-- an error should be raised some how from object type "UNKNOWN TYPE!"
 - sort this out %!v(PANIC=runtime error: invalid memory address or nil pointer dereference)
                 %!v(PANIC=runtime error: invalid memory address or nil pointer dereference)

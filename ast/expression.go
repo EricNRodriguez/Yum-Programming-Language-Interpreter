@@ -25,7 +25,7 @@ func (p *PrefixExpression) String() string {
 }
 
 func (p *PrefixExpression) Type() NodeType {
-	return PREFIX_EXPRESSION
+	return PrefixExpressionNode
 }
 
 func (p *PrefixExpression) expressionFunction() {}
@@ -49,7 +49,7 @@ func (i *InfixExpression) String() string {
 }
 
 func (i *InfixExpression) Type() NodeType {
-	return INFIX_EXPRESSION
+	return InfixExpressionNode
 }
 
 func (i *InfixExpression) expressionFunction() {}
@@ -71,7 +71,7 @@ func (ie *IntegerExpression) String() string {
 }
 
 func (ie *IntegerExpression) Type() NodeType {
-	return INTEGER_EXPRESSION
+	return IntegerExpressionNode
 }
 
 func (ie *IntegerExpression) expressionFunction() {}
@@ -93,7 +93,7 @@ func (fpe *FloatingPointExpression) String() string {
 }
 
 func (fpe *FloatingPointExpression) Type() NodeType {
-	return FLOATING_POINT_EXPRESSION
+	return FloatingPointExpressionNode
 }
 
 func (fpe *FloatingPointExpression) expressionFunction() {}
@@ -118,7 +118,7 @@ func (be *BooleanExpression) String() string {
 }
 
 func (be *BooleanExpression) Type() NodeType {
-	return BOOLEAN_EXPRESSION
+	return BooleanExpressionNode
 }
 
 func (be *BooleanExpression) expressionFunction() {}
@@ -142,23 +142,29 @@ func (fc *FunctionCallExpression) String() string {
 }
 
 func (fc *FunctionCallExpression) Type() NodeType {
-	return FUNC_CALL_EXPRESSION
+	return FunctionCallExpressionNode
 }
 
 func (fc *FunctionCallExpression) expressionFunction() {}
 
 type IdentifierExpression struct {
-	*Identifier
+	token.Metadata
+	Name string
 }
 
-func NewIdentifierExpression(t token.Token) Expression {
+func NewIdentifierExpression(t token.Token) *IdentifierExpression {
 	return &IdentifierExpression{
-		Identifier: NewIdentifier(t),
+		Metadata: t.Data(),
+		Name:     t.Literal(),
 	}
 }
 
+func (i *IdentifierExpression) String() string {
+	return i.Name
+}
+
 func (i *IdentifierExpression) Type() NodeType {
-	return IDENTIFIER_EXPRESSION
+	return IdentifierExpressionNode
 }
 
 func (i *IdentifierExpression) expressionFunction() {}
@@ -187,7 +193,7 @@ func (s *StringExpression) String() string {
 }
 
 func (s *StringExpression) Type() NodeType {
-	return STRING_EXPRESSION
+	return StringExpressionNode
 }
 
 func (s *StringExpression) expressionFunction() {}
@@ -220,7 +226,7 @@ func (a *ArrayExpression) String() string {
 }
 
 func (a *ArrayExpression) Type() NodeType {
-	return ARRAY
+	return ArrayExpressionNode
 }
 
 func (a *ArrayExpression) expressionFunction() {}
@@ -244,7 +250,7 @@ func (a *ArrayIndexExpression) String() string {
 }
 
 func (a *ArrayIndexExpression) Type() NodeType {
-	return ARRAY_INDEX_EXPRESSION
+	return ArrayIndexExpressionNode
 }
 
 func (a *ArrayIndexExpression) expressionFunction() {}

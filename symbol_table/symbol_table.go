@@ -10,12 +10,10 @@ type SymbolTable interface {
 	GetScope() int
 	SetVar(string, object.Object)
 	UpdateVar(string, object.Object)
-	DelVar(string)
 	GetVar(string) (object.Object, bool)
 	GetVarInScope(string, int) (object.Object, bool)
 	SetUserFunc(*object.UserFunction)
 	GetNativeFunc(string) (*object.NativeFunction, bool)
-	DelUserFunc(string)
 	GetUserFunc(string) (*object.UserFunction, bool)
 	AvailableVar(string, bool) (ok bool)
 	AvailableFunc(string) (ok bool)
@@ -33,7 +31,7 @@ type symbolTable struct {
 	scope                int
 }
 
-func NewSymbolTable() SymbolTable {
+func NewSymbolTable() *symbolTable {
 	globalScope := make(map[string]object.Object)
 	return &symbolTable{
 		nameSpace:            []map[string]object.Object{globalScope}, // initialise global scope
@@ -62,10 +60,6 @@ func (st *symbolTable) UpdateVar(name string, o object.Object) {
 		}
 		s--
 	}
-	return
-}
-
-func (st *symbolTable) DelVar(name string) {
 	return
 }
 
@@ -109,10 +103,6 @@ func (st *symbolTable) AvailableFunc(name string) bool {
 	_, okU := st.functionDeclarations[name]
 	_, okN := st.nativeFunctions[name]
 	return !(okU || okN)
-}
-
-func (st *symbolTable) DelUserFunc(string) {
-	return
 }
 
 func (st *symbolTable) GetUserFunc(name string) (o *object.UserFunction, ok bool) {

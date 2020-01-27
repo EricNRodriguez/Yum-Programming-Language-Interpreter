@@ -2,6 +2,7 @@ package ast
 
 import (
 	"Yum-Programming-Language-Interpreter/token"
+	"bytes"
 	"fmt"
 	"strings"
 )
@@ -10,7 +11,7 @@ type VarStatement struct {
 	*AssignmentStatement
 }
 
-func NewVarStatement(md token.Metadata, i *Identifier, e Expression) *VarStatement {
+func NewVarStatement(md token.Metadata, i *IdentifierExpression, e Expression) *VarStatement {
 	return &VarStatement{
 		AssignmentStatement: NewAssignmentStatement(md, i, e),
 	}
@@ -21,29 +22,29 @@ func (v *VarStatement) String() string {
 }
 
 func (v *VarStatement) Type() NodeType {
-	return VAR_STATEMENT
+	return VarStatementNode
 }
 
 type AssignmentStatement struct {
 	token.Metadata
-	Identifier *Identifier
-	Expression Expression
+	IdentifierNode *IdentifierExpression
+	Expression     Expression
 }
 
-func NewAssignmentStatement(md token.Metadata, i *Identifier, e Expression) *AssignmentStatement {
+func NewAssignmentStatement(md token.Metadata, i *IdentifierExpression, e Expression) *AssignmentStatement {
 	return &AssignmentStatement{
-		Metadata:   md,
-		Identifier: i,
-		Expression: e,
+		Metadata:       md,
+		IdentifierNode: i,
+		Expression:     e,
 	}
 }
 
 func (as *AssignmentStatement) String() string {
-	return fmt.Sprintf(" %v = %v;", as.Identifier.String(), as.Expression.String())
+	return fmt.Sprintf(" %v = %v;", as.IdentifierNode.String(), as.Expression.String())
 }
 
 func (as *AssignmentStatement) Type() NodeType {
-	return ASSIGNMENT_STATEMENT
+	return AssignmentStatementNode
 }
 
 func (as *AssignmentStatement) statementFunction() {}
@@ -69,7 +70,7 @@ func (r *ReturnStatement) String() string {
 }
 
 func (r *ReturnStatement) Type() NodeType {
-	return RETURN_STATEMENT
+	return ReturnStatementNode
 }
 
 func (r *ReturnStatement) statementFunction() {}
@@ -89,7 +90,7 @@ func (fc *FunctionCallStatement) String() string {
 }
 
 func (fc *FunctionCallStatement) Type() NodeType {
-	return FUNCTION_CALL_STATEMENT
+	return FunctionCallStatementNode
 }
 
 func (fc *FunctionCallStatement) statementFunction() {}
@@ -112,15 +113,15 @@ func NewIfStatement(t token.Token, c Expression, tb, fb []Statement) Statement {
 
 func (ifs *IfStatement) String() string {
 	if ifs.ElseBlock != nil {
-		return fmt.Sprintf("if %v { %v } else { %v };", ifs.Condition.String(), statementArrayToString(ifs.IfBlock),
-			statementArrayToString(ifs.ElseBlock))
+		return fmt.Sprintf("if %v { %v } else { %v };", ifs.Condition.String(), statementArrayNodeToString(ifs.IfBlock),
+			statementArrayNodeToString(ifs.ElseBlock))
 	} else {
-		return fmt.Sprintf("if %v { %v };", ifs.Condition.String(), statementArrayToString(ifs.IfBlock))
+		return fmt.Sprintf("if %v { %v };", ifs.Condition.String(), statementArrayNodeToString(ifs.IfBlock))
 	}
 }
 
 func (ifs *IfStatement) Type() NodeType {
-	return IF_STATEMENT
+	return IfStatementNode
 }
 
 func (ifs *IfStatement) statementFunction() {}
@@ -140,11 +141,11 @@ func NewWhileStatement(md token.Metadata, c Expression, b []Statement) *WhileSta
 }
 
 func (w *WhileStatement) String() string {
-	return fmt.Sprintf("while (%v) { %v };", w.Condition.String(), statementArrayToString(w.Block))
+	return fmt.Sprintf("while (%v) { %v };", w.Condition.String(), statementArrayNodeToString(w.Block))
 }
 
 func (w *WhileStatement) Type() NodeType {
-	return WHILE_STATEMENT
+	return WhileStatementNode
 }
 
 func (w *WhileStatement) statementFunction() {}
@@ -152,11 +153,11 @@ func (w *WhileStatement) statementFunction() {}
 type FunctionDeclarationStatement struct {
 	token.Metadata
 	Name       string
-	Parameters []Identifier
+	Parameters []IdentifierExpression
 	Body       []Statement
 }
 
-func NewFuntionDeclarationStatement(t token.Token, n string, b []Statement, ps []Identifier) Statement {
+func NewFuntionDeclarationStatement(t token.Token, n string, b []Statement, ps []IdentifierExpression) Statement {
 	return &FunctionDeclarationStatement{
 		Metadata:   t.Data(),
 		Name:       n,
@@ -166,24 +167,29 @@ func NewFuntionDeclarationStatement(t token.Token, n string, b []Statement, ps [
 }
 
 func (fds *FunctionDeclarationStatement) String() string {
-	var identifierNames = make([]string, len(fds.Parameters))
+	var IdentifierNodeNames = make([]string, len(fds.Parameters))
 	for i, p := range fds.Parameters {
-		identifierNames[i] = p.String()
+		IdentifierNodeNames[i] = p.String()
 	}
-	return fmt.Sprintf("func %v(%v) { %v };", fds.Name, strings.Join(identifierNames, ", "),
-		statementArrayToString(fds.Body))
+	return fmt.Sprintf("func %v(%v) { %v };", fds.Name, strings.Join(IdentifierNodeNames, ", "),
+		statementArrayNodeToString(fds.Body))
 }
 
 func (fds *FunctionDeclarationStatement) Type() NodeType {
-	return FUNCTION_DECLARATION_STATEMENT
+	return FunctionDeclarationStatementNode
 }
 
 func (fds *FunctionDeclarationStatement) statementFunction() {}
 
-func statementArrayToString(staArr []Statement) string {
-	var strArr = make([]string, len(staArr))
+func statementArrayNodeToString(staArr []Statement) string {
+	strBuff := bytes.Buffer{}
+
 	for i, sta := range staArr {
-		strArr[i] = sta.String()
+		strBuff.WriteString(sta.String())
+		if i != len(staArr) - 1 {
+			strBuff.WriteString(", ")
+		}
 	}
-	return strings.Join(strArr, " ")
+
+	return strBuff.String()
 }

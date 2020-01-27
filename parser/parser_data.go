@@ -7,7 +7,7 @@ import (
 	"fmt"
 )
 
-type parserDataInterface interface {
+type ParserData interface {
 	consume(int)
 	currentToken() token.Token
 	expectTokenType(token.TokenType) bool
@@ -16,7 +16,6 @@ type parserDataInterface interface {
 	recordError(error)
 	errors() []error
 	consumeBlockStatement()
-	consumeProgram()
 	consumeStatement()
 }
 
@@ -26,7 +25,7 @@ type parserData struct {
 	syntaxErrors []error
 }
 
-func newParserData(l lexer.Lexer) (parserDataInterface, error) {
+func newParserData(l lexer.Lexer) (*parserData, error) {
 	var (
 		cT  token.Token
 		err error
@@ -36,7 +35,7 @@ func newParserData(l lexer.Lexer) (parserDataInterface, error) {
 		err = internal.NewError(cT.Data(), internal.ErrInitParser, internal.InternalErr)
 		return nil, err
 
-	} else if cT.Type() == token.EOF {
+	} else if cT.Type() == token.EOFToken {
 		err = internal.NewError(cT.Data(), internal.ErrEmptyFile, internal.SyntaxErr)
 		return nil, err
 
@@ -44,12 +43,11 @@ func newParserData(l lexer.Lexer) (parserDataInterface, error) {
 
 	pd := &parserData{
 		tokBuf:       make([]token.Token, 0),
-		currTok:      cT,
 		syntaxErrors: make([]error, 0),
+		currTok:      cT,
 	}
 
-	for cT.Type() != token.EOF {
-		fmt.Println(cT)
+	for cT.Type() != token.EOFToken {
 		cT, _ = l.NextToken()
 		pd.addToken(cT)
 	}
@@ -77,7 +75,7 @@ func (pd *parserData) currentToken() token.Token {
 
 func (pd *parserData) expectTokenType(e token.TokenType) (b bool) {
 	if pd.peekToken().Type() != e {
-		errMsg := fmt.Sprintf(internal.InvalidTokenErr, e, pd.peekToken().Type())
+		errMsg := fmt.Sprintf(internal.ErrInvalidToken, e, pd.peekToken().Type())
 		pd.recordError(internal.NewError(pd.peekToken().Data(), errMsg, internal.SyntaxErr))
 		return false
 	}
@@ -107,9 +105,9 @@ func (pd *parserData) errors() []error {
 
 // need to update to account for nested block statement s
 func (pd *parserData) consumeBlockStatement() {
-	for pd.currentToken().Type() != token.RBRACE {
-		if pd.currentToken().Type() == token.EOF {
-			errMsg := fmt.Sprintf(internal.InvalidTokenErr, token.RBRACE, pd.currentToken().Literal())
+	for pd.currentToken().Type() != token.RightBraceToken {
+		if pd.currentToken().Type() == token.EOFToken {
+			errMsg := fmt.Sprintf(internal.ErrInvalidToken, token.RightBraceToken, pd.currentToken().Literal())
 			pd.recordError(internal.NewError(pd.currentToken().Data(), errMsg, internal.SyntaxErr))
 			return
 		}
@@ -121,13 +119,13 @@ func (pd *parserData) consumeBlockStatement() {
 
 func (pd *parserData) consumeIfStatement() {
 	// move to next closing parenthesis
-	for pd.currentToken().Type() != token.RBRACE && pd.currentToken().Type() != token.EOF {
+	for pd.currentToken().Type() != token.RightBraceToken && pd.currentToken().Type() != token.EOFToken {
 		pd.consume(1)
 	}
 	pd.consume(1) // move to token following }
 
-	if pd.currentToken().Type() == token.ELSE {
-		for pd.currentToken().Type() != token.RBRACE {
+	if pd.currentToken().Type() == token.ElseToken {
+		for pd.currentToken().Type() != token.RightBraceToken {
 			pd.consume(1)
 		}
 		pd.consume(1)
@@ -136,19 +134,13 @@ func (pd *parserData) consumeIfStatement() {
 	return
 }
 
-func (pd *parserData) consumeProgram() {
-	pd.currTok = pd.tokBuf[len(pd.tokBuf)-2]
-	pd.tokBuf = pd.tokBuf[len(pd.tokBuf)-1:len(pd.tokBuf)]
-	return
-}
-
 func (pd *parserData) consumeStatement() {
-	for pd.currentToken().Type() != token.SEMICOLON && pd.currentToken().Type() != token.LBRACE &&
-		pd.currentToken().Type() != token.EOF {
+	for pd.currentToken().Type() != token.SemicolonToken && pd.currentToken().Type() != token.LeftBraceToken &&
+		pd.currentToken().Type() != token.EOFToken {
 		pd.consume(1)
 	}
 
-	if pd.currentToken().Type() == token.LBRACE {
+	if pd.currentToken().Type() == token.LeftBraceToken {
 		pd.consumeIfStatement()
 	}
 

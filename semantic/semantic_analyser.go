@@ -10,59 +10,69 @@ import (
 
 type analysisMethod func(node ast.Node)
 
-type SemanticAnalyser struct {
+type SemanticAnalyser interface {
+	Analyse(node ast.Node) []error
+}
+
+type semanticAnalyser struct {
 	symbol_table.SymbolTable
 	semanticErrors   []error
 	methodRouter     map[ast.NodeType]analysisMethod
 	currentStatement ast.NodeType
 }
 
-func NewSemanticAnalyser() (sA *SemanticAnalyser) {
-	sA = &SemanticAnalyser{
+func NewSemanticAnalyser() (sA *semanticAnalyser) {
+	sA = &semanticAnalyser{
 		SymbolTable:    symbol_table.NewSymbolTable(),
 		semanticErrors: make([]error, 0),
 		methodRouter:   make(map[ast.NodeType]analysisMethod),
 	}
 
 	sA.methodRouter = map[ast.NodeType]analysisMethod{
-		ast.PROGRAM:                        sA.analyseProgram,
-		ast.PREFIX_EXPRESSION:              sA.analysePrefixExpression,
-		ast.INFIX_EXPRESSION:               sA.analyseInfixExpression,
-		ast.FUNC_CALL_EXPRESSION:           sA.analyseFunctionCallExpression,
-		ast.VAR_STATEMENT:                  sA.analyseVarStatement,
-		ast.RETURN_STATEMENT:               sA.analyseReturnStatement,
-		ast.IF_STATEMENT:                   sA.analyseIfStatement,
-		ast.WHILE_STATEMENT:                sA.analyseWhileStatement,
-		ast.FUNCTION_DECLARATION_STATEMENT: sA.analyseFunctionDeclarationStatement,
-		ast.FUNCTION_CALL_STATEMENT:        sA.analyseFunctionCallStatement,
-		ast.ASSIGNMENT_STATEMENT:           sA.analyseAssignmentStatement,
-		ast.IDENTIFIER_EXPRESSION:          sA.analyseIdentifierExpression,
-		ast.ARRAY_INDEX_EXPRESSION: sA.analyseArrayIndexExpression,
+		ast.ProgramNode:                      sA.analyseProgram,
+		ast.PrefixExpressionNode:             sA.analysePrefixExpression,
+		ast.InfixExpressionNode:              sA.analyseInfixExpression,
+		ast.FunctionCallExpressionNode:       sA.analyseFunctionCallExpression,
+		ast.VarStatementNode:                 sA.analyseVarStatement,
+		ast.ReturnStatementNode:              sA.analyseReturnStatement,
+		ast.IfStatementNode:                  sA.analyseIfStatement,
+		ast.WhileStatementNode:               sA.analyseWhileStatement,
+		ast.FunctionDeclarationStatementNode: sA.analyseFunctionDeclarationStatement,
+		ast.FunctionCallStatementNode:        sA.analyseFunctionCallStatement,
+		ast.AssignmentStatementNode:          sA.analyseAssignmentStatement,
+		ast.IdentifierExpressionNode:         sA.analyseIdentifierExpression,
+		ast.ArrayIndexExpressionNode:         sA.analyseArrayIndexExpression,
 	}
 
 	return
 }
 
-func (sA *SemanticAnalyser) Analyse(node ast.Node) {
+func (sA *semanticAnalyser) Analyse(node ast.Node) []error {
+	sA.analyse(node)
+	return sA.semanticErrors
+}
+
+
+func (sA *semanticAnalyser) analyse(node ast.Node) {
 	if method, ok := sA.methodRouter[node.Type()]; ok {
 		method(node)
 	}
 	return
 }
 
-func (sA *SemanticAnalyser) analyseProgram(node ast.Node) {
+func (sA *semanticAnalyser) analyseProgram(node ast.Node) {
 	for _, s := range node.(*ast.Program).Statements {
 		sA.currentStatement = s.Type()
-		sA.Analyse(s)
+		sA.analyse(s)
 	}
 	return
 }
 
-func (sA *SemanticAnalyser) analyseIdentifierExpression(node ast.Node) {
+func (sA *semanticAnalyser) analyseIdentifierExpression(node ast.Node) {
 	stmt := node.(*ast.IdentifierExpression)
 
 	if sA.AvailableVar(stmt.Name, true) {
-		errMsg := fmt.Sprintf(internal.UndeclaredIdentifierErr, stmt.Name)
+		errMsg := fmt.Sprintf(internal.ErrUndeclaredIdentifierNode, stmt.Name)
 		sA.recordError(internal.NewError(stmt.Metadata, errMsg, internal.SemanticErr))
 		return
 	}
@@ -70,42 +80,42 @@ func (sA *SemanticAnalyser) analyseIdentifierExpression(node ast.Node) {
 	return
 }
 
-func (sA *SemanticAnalyser) analysePrefixExpression(node ast.Node) {
+func (sA *semanticAnalyser) analysePrefixExpression(node ast.Node) {
 	pExpr := node.(*ast.PrefixExpression)
-	sA.Analyse(pExpr.Expression)
+	sA.analyse(pExpr.Expression)
 	return
 }
 
-func (sA *SemanticAnalyser) analyseInfixExpression(node ast.Node) {
+func (sA *semanticAnalyser) analyseInfixExpression(node ast.Node) {
 	pExpr := node.(*ast.InfixExpression)
-	sA.Analyse(pExpr.LeftExpression)
-	sA.Analyse(pExpr.RightExpression)
+	sA.analyse(pExpr.LeftExpression)
+	sA.analyse(pExpr.RightExpression)
 	return
 }
 
-func (sA *SemanticAnalyser) analyseArrayIndexExpression(node ast.Node) {
+func (sA *semanticAnalyser) analyseArrayIndexExpression(node ast.Node) {
 	aIExpr := node.(*ast.ArrayIndexExpression)
 	if sA.AvailableVar(aIExpr.ArrayName, true) {
-		errMsg := fmt.Sprintf(internal.UndeclaredIdentifierErr, aIExpr.ArrayName)
+		errMsg := fmt.Sprintf(internal.ErrUndeclaredIdentifierNode, aIExpr.ArrayName)
 		sA.recordError(internal.NewError(aIExpr.Metadata, errMsg, internal.SemanticErr))
 		return
 	}
 }
 
-func (sA *SemanticAnalyser) analyseFunctionCallExpression(node ast.Node) {
+func (sA *semanticAnalyser) analyseFunctionCallExpression(node ast.Node) {
 	fCall := node.(*ast.FunctionCallExpression)
 
 	if uf, ok := sA.GetUserFunc(fCall.FunctionName); !ok {
 		// not a user defined func
 		if nf, ok := sA.GetNativeFunc(fCall.FunctionName); !ok {
 			// not a function
-			errMsg := fmt.Sprintf(internal.UndeclaredFunctionErr, fCall.FunctionName)
+			errMsg := fmt.Sprintf(internal.ErrUndeclaredFunction, fCall.FunctionName)
 			sA.recordError(internal.NewError(fCall.Metadata, errMsg, internal.SemanticErr))
 			return
 
 		} else if nf.NumParams != -1 && len(fCall.Parameters) != nf.NumParams {
 			// check that native function params align up
-			errMsg := fmt.Sprintf(internal.InvalidFunctionCallParametersErr, fCall.FunctionName, nf.NumParams, len(fCall.Parameters))
+			errMsg := fmt.Sprintf(internal.ErrInvalidFunctionCallParameters, fCall.FunctionName, nf.NumParams, len(fCall.Parameters))
 			sA.recordError(internal.NewError(fCall.Metadata, errMsg, internal.SemanticErr))
 			return
 
@@ -114,37 +124,36 @@ func (sA *SemanticAnalyser) analyseFunctionCallExpression(node ast.Node) {
 	} else if len(fCall.Parameters) != len(uf.Parameters) {
 
 		// check valid number of params
-		errMsg := fmt.Sprintf(internal.InvalidFunctionCallParametersErr, fCall.FunctionName, len(uf.Parameters), len(fCall.Parameters))
+		errMsg := fmt.Sprintf(internal.ErrInvalidFunctionCallParameters, fCall.FunctionName, len(uf.Parameters), len(fCall.Parameters))
 		sA.recordError(internal.NewError(fCall.Metadata, errMsg, internal.SemanticErr))
 		return
 
 	}
-
 
 	sA.analyseBlockExpression(fCall.Parameters...)
 
 	return
 }
 
-func (sA *SemanticAnalyser) analyseReturnStatement(node ast.Node) {
+func (sA *semanticAnalyser) analyseReturnStatement(node ast.Node) {
 	rS := node.(*ast.ReturnStatement)
 	if !sA.InFunctionCall() {
-		sA.recordError(internal.NewError(rS.Data(), internal.ReturnLocationErr, internal.SemanticErr))
+		sA.recordError(internal.NewError(rS.Data(), internal.ErrReturnLocation, internal.SemanticErr))
 	}
 
 	if rS.Expression != nil {
 		// analyse return expression
-		sA.Analyse(rS.Expression)
+		sA.analyse(rS.Expression)
 	}
 
 	return
 }
 
-func (sA *SemanticAnalyser) analyseIfStatement(node ast.Node) {
+func (sA *semanticAnalyser) analyseIfStatement(node ast.Node) {
 	ifStmt := node.(*ast.IfStatement)
 
 	// analyse condition
-	sA.Analyse(ifStmt.Condition)
+	sA.analyse(ifStmt.Condition)
 
 	// analyse true block
 	sA.EnterScope()
@@ -159,11 +168,11 @@ func (sA *SemanticAnalyser) analyseIfStatement(node ast.Node) {
 	return
 }
 
-func (sA *SemanticAnalyser) analyseWhileStatement(node ast.Node) {
+func (sA *semanticAnalyser) analyseWhileStatement(node ast.Node) {
 	wStmt := node.(*ast.WhileStatement)
 
 	// analyse condition
-	sA.Analyse(wStmt.Condition)
+	sA.analyse(wStmt.Condition)
 
 	// analyse true block
 	sA.EnterScope()
@@ -174,43 +183,43 @@ func (sA *SemanticAnalyser) analyseWhileStatement(node ast.Node) {
 }
 
 // checks that the variable has not been previously declared in the current scope
-func (sA *SemanticAnalyser) analyseVarStatement(node ast.Node) {
+func (sA *semanticAnalyser) analyseVarStatement(node ast.Node) {
 	stmt := node.(*ast.VarStatement)
 
 	// analyse expression
-	sA.Analyse(stmt.Expression)
+	sA.analyse(stmt.Expression)
 
-	if !sA.AvailableVar(stmt.Identifier.Name, false) {
-		errMsg := fmt.Sprintf(internal.DeclaredVariableErr, stmt.Identifier.Name)
+	if !sA.AvailableVar(stmt.IdentifierNode.Name, false) {
+		errMsg := fmt.Sprintf(internal.ErrDeclaredVariable, stmt.IdentifierNode.Name)
 		sA.recordError(internal.NewError(stmt.Metadata, errMsg,
 			internal.SemanticErr))
 		return
 	}
 
 	// save var
-	sA.SetVar(stmt.Identifier.Name, object.NewNull())
+	sA.SetVar(stmt.IdentifierNode.Name, object.NewNull())
 	return
 }
 
-func (sA *SemanticAnalyser) analyseAssignmentStatement(node ast.Node) {
+func (sA *semanticAnalyser) analyseAssignmentStatement(node ast.Node) {
 	stmt := node.(*ast.AssignmentStatement)
 	// check that it exists
-	if sA.AvailableVar(stmt.Identifier.Name, true) {
-		errMsg := fmt.Sprintf(internal.UndeclaredIdentifierErr, stmt.Identifier.Name)
+	if sA.AvailableVar(stmt.IdentifierNode.Name, true) {
+		errMsg := fmt.Sprintf(internal.ErrUndeclaredIdentifierNode, stmt.IdentifierNode.Name)
 		sA.recordError(internal.NewError(stmt.Metadata, errMsg, internal.SemanticErr))
 		return
 	}
 
 	// analyse expression
-	sA.Analyse(stmt.Expression)
+	sA.analyse(stmt.Expression)
 
 	return
 }
 
-func (sA *SemanticAnalyser) analyseFunctionDeclarationStatement(node ast.Node) {
+func (sA *semanticAnalyser) analyseFunctionDeclarationStatement(node ast.Node) {
 	fDec := node.(*ast.FunctionDeclarationStatement)
 	if !sA.AvailableFunc(fDec.Name) {
-		errMsg := fmt.Sprintf(internal.DeclaredFunctionErr, fDec.Name)
+		errMsg := fmt.Sprintf(internal.ErrDeclaredFunction, fDec.Name)
 		sA.recordError(internal.NewError(fDec.Metadata, errMsg, internal.SemanticErr))
 		return
 	}
@@ -231,33 +240,29 @@ func (sA *SemanticAnalyser) analyseFunctionDeclarationStatement(node ast.Node) {
 	return
 }
 
-func (sA *SemanticAnalyser) analyseFunctionCallStatement(node ast.Node) {
+func (sA *semanticAnalyser) analyseFunctionCallStatement(node ast.Node) {
 	fCallStmt := node.(*ast.FunctionCallStatement)
-	sA.Analyse(fCallStmt.FunctionCallExpression)
+	sA.analyse(fCallStmt.FunctionCallExpression)
 	return
 }
 
-func (sA *SemanticAnalyser) recordError(err error) {
+func (sA *semanticAnalyser) recordError(err error) {
 	if err != nil {
 		sA.semanticErrors = append(sA.semanticErrors, err)
 	}
 	return
 }
 
-func (sA *SemanticAnalyser) SemanticErrors() []error {
-	return sA.semanticErrors
-}
-
-func (sA *SemanticAnalyser) analyseBlockStatement(stmts ...ast.Statement) {
+func (sA *semanticAnalyser) analyseBlockStatement(stmts ...ast.Statement) {
 	for _, s := range stmts {
-		sA.Analyse(s)
+		sA.analyse(s)
 	}
 	return
 }
 
-func (sA *SemanticAnalyser) analyseBlockExpression(expr ...ast.Expression) {
+func (sA *semanticAnalyser) analyseBlockExpression(expr ...ast.Expression) {
 	for _, e := range expr {
-		sA.Analyse(e)
+		sA.analyse(e)
 	}
 	return
 }
