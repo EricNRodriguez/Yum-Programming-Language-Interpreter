@@ -1,26 +1,4 @@
-func fact(n) {
-    if (n == 1) {
-        return 1;
-    };
 
-    return n * fact(n-1);
-};
-
-print(fact(65));
-
-var u = 93;
-var u2 = u == 22;
-print(u2);
-
-func hello(a,b,c) {
-    while (a < 20) {
-        if (b) {
-            print(b & c);
-        } else {
-            print(c);
-        };
-    a = a + 1;
-    };
-};
-
-hello(18,true,"eric");
+var x = 22;
+var y = 23*22/10;
+var u = "hello";
