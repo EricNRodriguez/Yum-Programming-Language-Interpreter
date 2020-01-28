@@ -42,6 +42,7 @@ func NewSemanticAnalyser() (sA *semanticAnalyser) {
 		ast.AssignmentStatementNode:          sA.analyseAssignmentStatement,
 		ast.IdentifierExpressionNode:         sA.analyseIdentifierExpression,
 		ast.ArrayIndexExpressionNode:         sA.analyseArrayIndexExpression,
+		ast.ArrayExpressionNode:              sA.analyseArrayExpression,
 	}
 
 	return
@@ -51,7 +52,6 @@ func (sA *semanticAnalyser) Analyse(node ast.Node) []error {
 	sA.analyse(node)
 	return sA.semanticErrors
 }
-
 
 func (sA *semanticAnalyser) analyse(node ast.Node) {
 	if method, ok := sA.methodRouter[node.Type()]; ok {
@@ -99,6 +99,30 @@ func (sA *semanticAnalyser) analyseArrayIndexExpression(node ast.Node) {
 		errMsg := fmt.Sprintf(internal.ErrUndeclaredIdentifierNode, aIExpr.ArrayName)
 		sA.recordError(internal.NewError(aIExpr.Metadata, errMsg, internal.SemanticErr))
 		return
+	}
+
+	if aIExpr.IndexExpr.Type() == ast.ArrayExpressionNode|| aIExpr.IndexExpr.Type() == ast.FloatingPointExpressionNode ||
+		aIExpr.IndexExpr.Type() == ast.StringExpressionNode|| aIExpr.IndexExpr.Type() == ast.BooleanExpressionNode {
+		errMsg := fmt.Sprintf(internal.ErrInvalidIndexType, aIExpr.IndexExpr.Type())
+		sA.recordError(internal.NewError(aIExpr.Metadata, errMsg, internal.SemanticErr))
+		return
+	}
+
+	sA.Analyse(aIExpr.IndexExpr)
+
+}
+
+func (sA *semanticAnalyser) analyseArrayExpression(node ast.Node) {
+	arrExpr := node.(*ast.ArrayExpression)
+	for _, expr := range arrExpr.Data {
+		if expr.Type() == ast.IdentifierExpressionNode {
+			expr := expr.(*ast.IdentifierExpression)
+			if sA.AvailableVar(expr.Name, true) {
+				errMsg := fmt.Sprintf(internal.ErrUndeclaredFunction, expr.Name)
+				sA.recordError(internal.NewError(expr.Metadata, errMsg,
+					internal.SemanticErr))
+			}
+		}
 	}
 }
 

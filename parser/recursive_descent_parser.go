@@ -65,19 +65,25 @@ func (rdp *RecursiveDescentParser) Parse() (prog *ast.Program, errs []error) {
 }
 
 func (rdp *RecursiveDescentParser) parseStatement() (stmt ast.Statement, err error) {
-	if parser, ok := rdp.parseMethodRouter[rdp.currentToken().Type()]; !ok {
+	var (
+		pM parseMethod
+		ok bool
+	)
+
+	if pM, ok = rdp.parseMethodRouter[rdp.currentToken().Type()]; !ok {
 		errMsg := fmt.Sprintf(internal.ErrInvalidStatement, rdp.currentToken().Literal())
 		err = internal.NewError(rdp.currentToken().Data(), errMsg, internal.SyntaxErr)
 		return
 
-	} else {
-		stmt = parser()
-		if rdp.currentToken().Type() != token.SemicolonToken {
-			errMsg := fmt.Sprintf(internal.ErrInvalidToken, ";", rdp.currentToken().Literal())
-			return nil, internal.NewError(token.NewMetatadata(rdp.currentToken().LineNumber()-1,
-				rdp.currentToken().FileName()), errMsg, internal.SyntaxErr)
-		}
 	}
+
+	stmt = pM()
+	if rdp.currentToken().Type() != token.SemicolonToken {
+		errMsg := fmt.Sprintf(internal.ErrInvalidToken, ";", rdp.currentToken().Literal())
+		return nil, internal.NewError(token.NewMetatadata(rdp.currentToken().LineNumber()-1,
+			rdp.currentToken().FileName()), errMsg, internal.SyntaxErr)
+	}
+
 	return
 }
 
@@ -135,6 +141,7 @@ func (rdp *RecursiveDescentParser) parseReturnStatement() (stmt ast.Statement) {
 
 func (rdp *RecursiveDescentParser) parseIdenStatement() (stmt ast.Statement) {
 	switch rdp.peekToken().Type() {
+
 	case token.AssignToken:
 		iden := ast.NewIdentifierExpression(rdp.currentToken())
 
@@ -144,16 +151,22 @@ func (rdp *RecursiveDescentParser) parseIdenStatement() (stmt ast.Statement) {
 		}
 		rdp.consume(2) // consume IdentifierNode and assign
 
-		if expr, err := rdp.parseExpression(MinPrecedence); err != nil {
+		var (
+			expr ast.Expression
+			err error
+		)
+
+		if expr, err = rdp.parseExpression(MinPrecedence); err != nil {
 			rdp.recordError(err)
 			rdp.consumeStatement()
 			return
-		} else {
-			stmt = ast.NewAssignmentStatement(iden.Metadata, iden, expr)
 		}
+
+		stmt = ast.NewAssignmentStatement(iden.Metadata, iden, expr)
 
 	case token.LeftParenToken:
 		stmt = rdp.parseFunctionCallStatement()
+
 	default:
 		errMsg := fmt.Sprintf(internal.ErrInvalidStatement, rdp.currentToken().Literal())
 		err := internal.NewError(rdp.currentToken().Data(), errMsg, internal.SyntaxErr)
@@ -190,7 +203,6 @@ func (rdp *RecursiveDescentParser) parseIfStatement() (stmt ast.Statement) {
 	)
 
 	if !rdp.expectTokenType(token.LeftParenToken) {
-		//rdp.consumeCurrentStatement()
 		rdp.consumeStatement()
 		return
 	}
@@ -246,6 +258,7 @@ func (rdp *RecursiveDescentParser) parseWhileStatement() (stmt ast.Statement) {
 	return
 }
 
+// THIS SHOULD RETURN AN ERROR AS WELL!
 func (rdp *RecursiveDescentParser) parseBlockStatement() (bStmt []ast.Statement) {
 	bStmt = make([]ast.Statement, 0)
 	if rdp.currentToken().Type() != token.LeftBraceToken {
@@ -258,12 +271,17 @@ func (rdp *RecursiveDescentParser) parseBlockStatement() (bStmt []ast.Statement)
 	rdp.consume(1)
 
 	for rdp.currentToken().Type() != token.RightBraceToken && rdp.currentToken().Type() != token.EOFToken {
-		if stmt, err := rdp.parseStatement(); err != nil {
+		var (
+			stmt ast.Statement
+			err error
+		)
+		if stmt, err = rdp.parseStatement(); err != nil {
 			rdp.recordError(err)
-			rdp.consumeStatement() // skip the rest of the current statement
-		} else {
-			bStmt = append(bStmt, stmt)
+			rdp.consumeBlockStatement() // skip the rest of the current statement
+			return
 		}
+
+		bStmt = append(bStmt, stmt)
 		rdp.consume(1)
 	}
 
@@ -285,27 +303,37 @@ func (rdp *RecursiveDescentParser) parseFuncDeclarationStatement() (stmt ast.Sta
 		iden   string
 		params []ast.IdentifierExpression
 		body   []ast.Statement
+		pExprs []ast.Expression // function parameter expressions
+		err error
 	)
 
 	if !rdp.expectTokenType(token.IdentifierToken) {
-		rdp.consumeBlockStatement()
+		rdp.consumeStatement()
 		return
 	}
+
 	rdp.consume(1) // consume func token
 
 	iden = rdp.currentToken().Literal()
 	rdp.consume(1) // consume function name
 
-	ps := rdp.parseParameters(false)
-	params = make([]ast.IdentifierExpression, len(ps))
-	for i, p := range ps {
-		if p.Type() != ast.IdentifierExpressionNode {
-			errMsg := fmt.Sprintf(internal.ErrInvalidToken, token.IdentifierToken, p.String())
-			rdp.recordError(internal.NewError(token.NewMetatadata(p.LineNumber(), p.FileName()), errMsg, internal.SyntaxErr))
-			rdp.consumeBlockStatement()
+	if pExprs, err = rdp.parseParameters(false); err != nil {
+		rdp.recordError(err)
+		rdp.consumeStatement()
+		return
+	}
+
+	params = make([]ast.IdentifierExpression, len(pExprs))
+
+	for i, pExpr := range pExprs {
+		if pExpr.Type() != ast.IdentifierExpressionNode {
+			errMsg := fmt.Sprintf(internal.ErrInvalidToken, token.IdentifierToken, pExpr.String())
+			rdp.recordError(internal.NewError(token.NewMetatadata(pExpr.LineNumber(), pExpr.FileName()), errMsg,
+				internal.SyntaxErr))
+			rdp.consumeStatement()
 			return
 		}
-		params[i] = *p.(*ast.IdentifierExpression)
+		params[i] = *pExpr.(*ast.IdentifierExpression)
 	}
 
 	body = rdp.parseBlockStatement()

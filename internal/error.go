@@ -8,8 +8,8 @@ import (
 type ErrorType string
 
 const (
-	SyntaxErr ErrorType = "syntax error"
-	RuntimeErr ErrorType = "runtime error"
+	SyntaxErr   ErrorType = "syntax error"
+	RuntimeErr  ErrorType = "runtime error"
 	SemanticErr ErrorType = "semantic error"
 	InternalErr ErrorType = "internal error"
 )

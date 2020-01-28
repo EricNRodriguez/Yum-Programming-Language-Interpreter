@@ -6,8 +6,8 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"github.com/spf13/afero"
 	"io"
-	"os"
 )
 
 type Lexer interface {
@@ -25,7 +25,7 @@ type lexer struct {
 	ignoreSpace       bool
 }
 
-func NewLexer(f *os.File) (l Lexer, err error) {
+func NewLexer(f afero.File) (l Lexer, err error) {
 	var (
 		r    *bufio.Reader
 		line []byte
@@ -203,8 +203,6 @@ func (l *lexer) NextToken() (t token.Token, err error) {
 	case token.QuotationMarkToken:
 		t = token.NewToken(token.QuotationMarkToken, s, l.currentLineNumber, l.fileName)
 		l.ignoreSpace = !l.ignoreSpace // allow strings to have white spaces
-	case token.PeriodToken:
-		t = token.NewToken(token.PeriodToken, s, l.currentLineNumber, l.fileName)
 	case token.LeftParenToken:
 		t = token.NewToken(token.LeftParenToken, s, l.currentLineNumber, l.fileName)
 	case token.RightParenToken:

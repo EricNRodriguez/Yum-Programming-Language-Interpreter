@@ -8,22 +8,26 @@ import (
 	"Yum-Programming-Language-Interpreter/parser"
 	"Yum-Programming-Language-Interpreter/semantic"
 	"fmt"
+	"github.com/spf13/afero"
 	"os"
 )
 
 func main() {
 	var (
-		l lexer.Lexer
-		f *os.File
-		p parser.Parser
-		prog ast.Node
-		sA semantic.SemanticAnalyser
-		e eval.Evaluator
-		err error
-		errs []error
+		l     lexer.Lexer
+		appFs afero.Fs
+		f     afero.File
+		p     parser.Parser
+		prog  ast.Node
+		sA    semantic.SemanticAnalyser
+		e     eval.Evaluator
+		err   error
+		errs  []error
 	)
 
-	if f, err = os.Open("test_files/progressive.txt"); err != nil {
+	appFs = afero.NewOsFs()
+
+	if f, err = appFs.Open("test_files/progressive.txt"); err != nil {
 		fmt.Println(fmt.Sprintf(internal.ErrFailedToReadFile, "test_files/progressive.txt", err))
 		os.Exit(0)
 	}
@@ -53,10 +57,10 @@ func main() {
 		for _, e := range errs {
 			fmt.Println(e)
 		}
+		os.Exit(0)
 	}
 
 	e = eval.NewEvaluator()
 	e.Evaluate(prog)
-
 
 }
