@@ -1,7 +1,7 @@
 package ast
 
 import (
-	"Yum-Programming-Language-Interpreter/token"
+	"github.com/EricNRodriguez/yum/token"
 	"bytes"
 	"fmt"
 	"strconv"

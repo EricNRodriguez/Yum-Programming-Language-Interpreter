@@ -1,10 +1,10 @@
 package semantic
 
 import (
-	"Yum-Programming-Language-Interpreter/ast"
-	"Yum-Programming-Language-Interpreter/internal"
-	"Yum-Programming-Language-Interpreter/lexer"
-	"Yum-Programming-Language-Interpreter/parser"
+	"github.com/EricNRodriguez/yum/ast"
+	"github.com/EricNRodriguez/yum/internal"
+	"github.com/EricNRodriguez/yum/lexer"
+	"github.com/EricNRodriguez/yum/parser"
 	"fmt"
 	"github.com/spf13/afero"
 	"testing"

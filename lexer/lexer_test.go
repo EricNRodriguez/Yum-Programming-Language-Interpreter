@@ -1,8 +1,8 @@
 package lexer
 
 import (
-	"Yum-Programming-Language-Interpreter/internal"
-	"Yum-Programming-Language-Interpreter/token"
+	"github.com/EricNRodriguez/yum/internal"
+	"github.com/EricNRodriguez/yum/token"
 	"fmt"
 	"github.com/spf13/afero"
 	"testing"

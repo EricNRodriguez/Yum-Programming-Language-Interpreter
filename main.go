@@ -1,12 +1,12 @@
 package main
 
 import (
-	"Yum-Programming-Language-Interpreter/ast"
-	"Yum-Programming-Language-Interpreter/eval"
-	"Yum-Programming-Language-Interpreter/internal"
-	"Yum-Programming-Language-Interpreter/lexer"
-	"Yum-Programming-Language-Interpreter/parser"
-	"Yum-Programming-Language-Interpreter/semantic"
+	"github.com/EricNRodriguez/yum/ast"
+	"github.com/EricNRodriguez/yum/eval"
+	"github.com/EricNRodriguez/yum/internal"
+	"github.com/EricNRodriguez/yum/lexer"
+	"github.com/EricNRodriguez/yum/parser"
+	"github.com/EricNRodriguez/yum/semantic"
 	"fmt"
 	"github.com/spf13/afero"
 	"log"
@@ -17,6 +17,7 @@ func main() {
 	var (
 		l     lexer.Lexer
 		appFs afero.Fs
+		fp    string
 		f     afero.File
 		p     parser.Parser
 		prog  ast.Node
@@ -26,10 +27,25 @@ func main() {
 		errs  []error
 	)
 
+	if len(os.Args[1:]) == 0 {
+		fmt.Println(internal.ErrFileNotProvided)
+		os.Exit(0)
+	}
+
 	appFs = afero.NewOsFs()
 
-	if f, err = appFs.Open("test_files/progressive.txt"); err != nil {
-		log.Println(fmt.Sprintf(internal.ErrFailedToReadFile, "test_files/progressive.txt", err))
+	fp = os.Args[1:][0]
+	if _, err := os.Stat(fp); err != nil {
+		if os.IsNotExist(err) {
+			fmt.Printf(internal.ErrFileNotFound+"\n", fp)
+		} else {
+			fmt.Printf(internal.ErrLoadFile+"\n", fp, err.Error())
+		}
+		os.Exit(0)
+	}
+
+	if f, err = appFs.Open(fp); err != nil {
+		log.Println(fmt.Sprintf(internal.ErrFailedToReadFile+"\n", fp, err))
 		os.Exit(0)
 	}
 
@@ -64,4 +80,5 @@ func main() {
 	e = eval.NewEvaluator()
 	e.Evaluate(prog)
 
+	return
 }

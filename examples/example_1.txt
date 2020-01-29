@@ -1,0 +1,13 @@
+func sampleFunction(a,b,c) {
+    print("Hello, World!");
+    return a + b + c;
+};
+
+var x = 0;
+if (3 == 2) {
+    x = sampleFunction(1,2,3);
+} else {
+    x = sampleFunction(3,4,5);
+};
+
+print(x);

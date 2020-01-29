@@ -1,6 +1,6 @@
 package lexer
 
-import "Yum-Programming-Language-Interpreter/token"
+import "github.com/EricNRodriguez/yum/token"
 
 var keywords = map[string]token.TokenType{
 	"func":   token.FuncToken,

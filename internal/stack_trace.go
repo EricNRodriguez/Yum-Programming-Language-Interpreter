@@ -1,7 +1,7 @@
 package internal
 
 import (
-	"Yum-Programming-Language-Interpreter/ast"
+	"github.com/EricNRodriguez/yum/ast"
 )
 
 type StackTrace interface {

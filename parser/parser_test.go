@@ -1,9 +1,9 @@
 package parser
 
 import (
-	"Yum-Programming-Language-Interpreter/ast"
-	"Yum-Programming-Language-Interpreter/internal"
-	"Yum-Programming-Language-Interpreter/lexer"
+	"github.com/EricNRodriguez/yum/ast"
+	"github.com/EricNRodriguez/yum/internal"
+	"github.com/EricNRodriguez/yum/lexer"
 	"fmt"
 	"github.com/spf13/afero"
 	"strings"

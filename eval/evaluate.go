@@ -1,18 +1,13 @@
 package eval
 
 import (
-	"Yum-Programming-Language-Interpreter/ast"
-	"Yum-Programming-Language-Interpreter/internal"
-	"Yum-Programming-Language-Interpreter/object"
-	"Yum-Programming-Language-Interpreter/symbol_table"
-	"Yum-Programming-Language-Interpreter/token"
+	"github.com/EricNRodriguez/yum/ast"
+	"github.com/EricNRodriguez/yum/internal"
+	"github.com/EricNRodriguez/yum/object"
+	"github.com/EricNRodriguez/yum/symbol_table"
+	"github.com/EricNRodriguez/yum/token"
 	"flag"
 	"log"
-	//"Yum-ProgramNodeming-Language-Interpreter/ast"
-	//"Yum-ProgramNodeming-Language-Interpreter/internal"
-	//"Yum-ProgramNodeming-Language-Interpreter/object"
-	//"Yum-ProgramNodeming-Language-Interpreter/symbol_table"
-	//"Yum-ProgramNodeming-Language-Interpreter/token"
 	"fmt"
 	"os"
 )

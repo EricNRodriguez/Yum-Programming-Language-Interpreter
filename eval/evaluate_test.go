@@ -1,30 +1,30 @@
 package eval
 
 import (
-	"Yum-Programming-Language-Interpreter/ast"
-	"Yum-Programming-Language-Interpreter/internal"
-	"Yum-Programming-Language-Interpreter/lexer"
-	"Yum-Programming-Language-Interpreter/object"
-	"Yum-Programming-Language-Interpreter/parser"
-	"Yum-Programming-Language-Interpreter/semantic"
+	"github.com/EricNRodriguez/yum/ast"
+	"github.com/EricNRodriguez/yum/internal"
+	"github.com/EricNRodriguez/yum/object"
+	"github.com/EricNRodriguez/yum/symbol_table"
+	"github.com/EricNRodriguez/yum/token"
+	"github.com/EricNRodriguez/yum/semantic"
+
 	"fmt"
 	"github.com/spf13/afero"
 	"testing"
 )
 
-type symbol struct{
-	iden string
+type symbol struct {
+	iden  string
 	value string
 }
 
 type testCase struct {
 	input        []byte
-	err      bool
+	err          bool
 	symbolValues []symbol
 }
 
 func TestEvaluator(t *testing.T) {
-
 
 	tCs := []testCase{
 		{
@@ -140,12 +140,10 @@ func TestEvaluator(t *testing.T) {
 				{
 					"b",
 					"6",
-
 				},
 				{
 					"c",
 					"10",
-
 				},
 			},
 		},
@@ -161,17 +159,14 @@ func TestEvaluator(t *testing.T) {
 				{
 					"b",
 					"24",
-
 				},
 				{
 					"c",
 					"24",
-
 				},
 				{
 					"d",
 					"-60",
-
 				},
 			},
 		},
@@ -186,12 +181,10 @@ func TestEvaluator(t *testing.T) {
 				{
 					"b",
 					"-4",
-
 				},
 				{
 					"c",
 					"0",
-
 				},
 			},
 		},
@@ -206,7 +199,6 @@ func TestEvaluator(t *testing.T) {
 				{
 					"b",
 					"0",
-
 				},
 			},
 		},
@@ -221,12 +213,10 @@ func TestEvaluator(t *testing.T) {
 				{
 					"b",
 					"-0.375000",
-
 				},
 				{
 					"c",
 					"-0.666667",
-
 				},
 			},
 		},
@@ -241,12 +231,10 @@ func TestEvaluator(t *testing.T) {
 				{
 					"b",
 					"1.625000",
-
 				},
 				{
 					"c",
 					"4.000000",
-
 				},
 			},
 		},
@@ -261,19 +249,15 @@ func TestEvaluator(t *testing.T) {
 				{
 					"b",
 					"\"world\"",
-
 				},
 				{
 					"c",
 					"\"helloworld\"",
-
 				},
 				{
 					"d",
 					"\"hello world\"",
-
 				},
-
 			},
 		},
 		{
@@ -287,19 +271,15 @@ func TestEvaluator(t *testing.T) {
 				{
 					"b",
 					"true",
-
 				},
 				{
 					"c",
 					"false",
-
 				},
 				{
 					"d",
 					"true",
-
 				},
-
 			},
 		},
 		{
@@ -313,7 +293,6 @@ func TestEvaluator(t *testing.T) {
 				{
 					"b",
 					"true",
-
 				},
 			},
 		},
@@ -328,7 +307,6 @@ func TestEvaluator(t *testing.T) {
 				{
 					"b",
 					"false",
-
 				},
 			},
 		},
@@ -343,7 +321,6 @@ func TestEvaluator(t *testing.T) {
 				{
 					"b",
 					"false",
-
 				},
 			},
 		},
@@ -358,7 +335,6 @@ func TestEvaluator(t *testing.T) {
 				{
 					"b",
 					"true",
-
 				},
 			},
 		},
@@ -374,12 +350,10 @@ func TestEvaluator(t *testing.T) {
 				{
 					"b",
 					"6",
-
 				},
 				{
 					"c",
 					"6",
-
 				},
 			},
 		},
@@ -747,7 +721,6 @@ func TestEvaluator(t *testing.T) {
 		},
 	}
 
-
 	var (
 		fs  afero.Fs
 		err error
@@ -759,7 +732,7 @@ func TestEvaluator(t *testing.T) {
 	}
 
 	for i, tC := range tCs {
-		func () {
+		func() {
 			defer func() {
 				if r := recover(); r != nil && !tC.err {
 					t.Errorf(internal.ErrUnexpectedRuntimeError, i+1, r)
@@ -818,11 +791,11 @@ func TestEvaluator(t *testing.T) {
 			for _, expectedSymbol := range tC.symbolValues {
 				var (
 					trueValue object.Object
-					ok bool
+					ok        bool
 				)
 
 				if trueValue, ok = e.symbolTable.GetVar(expectedSymbol.iden); !ok {
-					t.Errorf(internal.ErrMissingSymbolTest, i+1,  expectedSymbol.iden, expectedSymbol.iden, expectedSymbol.value)
+					t.Errorf(internal.ErrMissingSymbolTest, i+1, expectedSymbol.iden, expectedSymbol.iden, expectedSymbol.value)
 					continue
 				}
 
@@ -833,9 +806,7 @@ func TestEvaluator(t *testing.T) {
 				}
 			}
 
-
 		}()
-
 
 	}
 	return

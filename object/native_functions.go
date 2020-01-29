@@ -1,7 +1,7 @@
 package object
 
 import (
-	"Yum-Programming-Language-Interpreter/internal"
+	"github.com/EricNRodriguez/yum/internal"
 	"errors"
 	"fmt"
 )

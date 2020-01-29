@@ -1,7 +1,7 @@
 package symbol_table
 
 import (
-	"Yum-Programming-Language-Interpreter/object"
+	"github.com/EricNRodriguez/yum/object"
 )
 
 type SymbolTable interface {

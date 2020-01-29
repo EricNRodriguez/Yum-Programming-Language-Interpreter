@@ -1,9 +1,9 @@
 package parser
 
 import (
-	"Yum-Programming-Language-Interpreter/internal"
-	"Yum-Programming-Language-Interpreter/lexer"
-	"Yum-Programming-Language-Interpreter/token"
+	"github.com/EricNRodriguez/yum/internal"
+	"github.com/EricNRodriguez/yum/lexer"
+	"github.com/EricNRodriguez/yum/token"
 	"fmt"
 )
 
@@ -16,6 +16,7 @@ type ParserData interface {
 	recordError(error)
 	errors() []error
 	consumeBlockStatement()
+	consumeIfStatement()
 	consumeStatement()
 }
 

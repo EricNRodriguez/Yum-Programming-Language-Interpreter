@@ -1,10 +1,10 @@
 package parser
 
 import (
-	"Yum-Programming-Language-Interpreter/ast"
-	"Yum-Programming-Language-Interpreter/internal"
-	"Yum-Programming-Language-Interpreter/lexer"
-	"Yum-Programming-Language-Interpreter/token"
+	"github.com/EricNRodriguez/yum/ast"
+	"github.com/EricNRodriguez/yum/internal"
+	"github.com/EricNRodriguez/yum/lexer"
+	"github.com/EricNRodriguez/yum/token"
 	"bytes"
 	"fmt"
 	"strconv"
@@ -23,10 +23,7 @@ const (
 	ConditionalPrecedence
 	AddSubPrecedence
 	MultDivPrecedence
-	ExponentPrecedence
 	PrefixPrecedence
-	PostfixPrecedence
-	FunctionCallPrecedence
 )
 
 var (

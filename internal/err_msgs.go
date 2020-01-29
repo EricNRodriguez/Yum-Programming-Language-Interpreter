@@ -40,8 +40,12 @@ const (
 	ErrInvalidSyntaxSemanticAnalysisTestCases = "test case %v | invalid test case, %v syntax errors occurred"
 	ErrInvalidSemanticsEvaluationTestCases    = "test case %v | invalid test case, %v semantic errors occurred"
 	ErrInvalidSyntaxEvaluationTestCases       = "test case %v | invalid test case, %v syntax errors occurred"
-	ErrMissingSymbolTest = "test case %v | %v not present after execution, expected %v : %v"
-	ErrInvalidSymbolValueTest = "test case %v | expected %v : %v, received %v : %v"
-	ErrUnexpectedRuntimeError = "test case %v | unexpected %v"
+	ErrMissingSymbolTest                      = "test case %v | %v not present after execution, expected %v : %v"
+	ErrInvalidSymbolValueTest                 = "test case %v | expected %v : %v, received %v : %v"
+	ErrUnexpectedRuntimeError                 = "test case %v | unexpected %v"
 
+	// executing errors
+	ErrFileNotProvided = "txt file required as argument"
+	ErrFileNotFound    = "%v not found"
+	ErrLoadFile        = "unable to load %v | %v"
 )

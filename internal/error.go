@@ -1,7 +1,7 @@
 package internal
 
 import (
-	"Yum-Programming-Language-Interpreter/token"
+	"github.com/EricNRodriguez/yum/token"
 	"fmt"
 )
 

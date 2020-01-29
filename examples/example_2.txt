@@ -1,0 +1,7 @@
+var x = [1,2,3,4,5];
+var i = 0;
+
+while (i < length(x)) {
+    print(x[i]);
+    i = i + 1;
+};

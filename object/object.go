@@ -1,7 +1,7 @@
 package object
 
 import (
-	"Yum-Programming-Language-Interpreter/ast"
+	"github.com/EricNRodriguez/yum/ast"
 	"bytes"
 	"fmt"
 	"strings"
