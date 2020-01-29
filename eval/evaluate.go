@@ -6,7 +6,8 @@ import (
 	"Yum-Programming-Language-Interpreter/object"
 	"Yum-Programming-Language-Interpreter/symbol_table"
 	"Yum-Programming-Language-Interpreter/token"
-
+	"flag"
+	"log"
 	//"Yum-ProgramNodeming-Language-Interpreter/ast"
 	//"Yum-ProgramNodeming-Language-Interpreter/internal"
 	//"Yum-ProgramNodeming-Language-Interpreter/object"
@@ -477,13 +478,18 @@ func (e *evaluator) evaluateFunctionDeclarationStatement(node ast.Node) object.O
 }
 
 func (e *evaluator) quit(err error) {
-	fmt.Println(err)
+	// Recovers in TestEvaluator
+	if v := flag.Lookup("test.v"); v != nil {
+		panic(err)
+	}
 
-	fmt.Println("\nstack trace ---------- ")
+	log.Println(err)
+
+	log.Println("stack trace ---------- ")
 	fCall, ok := e.stackTrace.Pop()
 
 	for ok == true {
-		fmt.Println(fmt.Sprintf("FUNCTION CALL %v %v - %v", fCall.FileName(), fCall.LineNumber(),
+		log.Println(fmt.Sprintf("FUNCTION CALL %v %v - %v", fCall.FileName(), fCall.LineNumber(),
 			fCall.String()))
 		fCall, ok = e.stackTrace.Pop()
 	}

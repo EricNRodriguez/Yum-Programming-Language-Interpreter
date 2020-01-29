@@ -140,31 +140,31 @@ x = x+1;
 		}
 
 		if _, err = fs.Stat(fp); err != nil {
-			t.Errorf("file \"%s\" does not exist.\n", fp)
+			t.Fatalf("file \"%s\" does not exist.\n", fp)
 		}
 
 		if f, err = fs.Open(fp); err != nil {
-			t.Errorf(err.Error())
+			t.Fatalf(err.Error())
 		}
 
 		if l, err = NewLexer(f); err != nil {
-			t.Errorf(err.Error())
+			t.Fatalf(err.Error())
 		}
 
 		for j := 0; j < len(tC.outputTokenLiterals); j++ {
 			if cT, err = l.NextToken(); err != nil {
 				t.Errorf(err.Error())
-				return
+				continue
 			}
 
 			if cT.Type() != tC.outputTokenTypes[j] {
 				t.Errorf(fmt.Sprintf(internal.ErrInvalidTokenTypeTest, i+1, cT.Type(), tC.outputTokenTypes[j]))
-				return
+				continue
 			}
 
 			if cT.Literal() != tC.outputTokenLiterals[j] {
 				t.Errorf(fmt.Sprintf(internal.ErrInvalidTokenLiteralTest, i+1, cT.Literal(), tC.outputTokenLiterals[j]))
-				return
+				continue
 			}
 
 		}

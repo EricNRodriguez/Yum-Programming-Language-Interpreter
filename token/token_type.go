@@ -6,12 +6,12 @@ const (
 	EOFToken     TokenType = "EOF"
 	IllegalToken TokenType = "illegal token"
 
-	FuncToken   TokenType = "FUNC"
-	VarToken    TokenType = "VAR"
-	IfToken     TokenType = "IF"
-	ElseToken   TokenType = "ELSE"
-	ReturnToken TokenType = "RETURN"
-	WhileToken  TokenType = "WHILE"
+	FuncToken   TokenType = "func"
+	VarToken    TokenType = "var"
+	IfToken     TokenType = "if"
+	ElseToken   TokenType = "else"
+	ReturnToken TokenType = "return"
+	WhileToken  TokenType = "while"
 
 	// Arithmetic operations
 	AddToken        TokenType = "+"
@@ -45,8 +45,6 @@ const (
 
 	LeftBracketToken  TokenType = "["
 	RightBracketToken TokenType = "]"
-
-	PeriodToken TokenType = "."
 
 	// string
 	QuotationMarkToken TokenType = "\""

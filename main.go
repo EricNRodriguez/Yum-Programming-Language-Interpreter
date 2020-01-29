@@ -9,6 +9,7 @@ import (
 	"Yum-Programming-Language-Interpreter/semantic"
 	"fmt"
 	"github.com/spf13/afero"
+	"log"
 	"os"
 )
 
@@ -28,25 +29,25 @@ func main() {
 	appFs = afero.NewOsFs()
 
 	if f, err = appFs.Open("test_files/progressive.txt"); err != nil {
-		fmt.Println(fmt.Sprintf(internal.ErrFailedToReadFile, "test_files/progressive.txt", err))
+		log.Println(fmt.Sprintf(internal.ErrFailedToReadFile, "test_files/progressive.txt", err))
 		os.Exit(0)
 	}
 
 	if l, err = lexer.NewLexer(f); err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		os.Exit(0)
 	}
 
 	defer l.Close()
 
 	if p, err = parser.NewRecursiveDescentParser(l); err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		os.Exit(1)
 	}
 
 	if prog, errs = p.Parse(); errs != nil && len(errs) != 0 {
 		for _, e := range errs {
-			fmt.Println(e)
+			log.Println(e)
 		}
 		os.Exit(0)
 	}
@@ -55,7 +56,7 @@ func main() {
 
 	if errs = sA.Analyse(prog); errs != nil && len(errs) != 0 {
 		for _, e := range errs {
-			fmt.Println(e)
+			log.Println(e)
 		}
 		os.Exit(0)
 	}

@@ -4,18 +4,18 @@ import (
 	"Yum-Programming-Language-Interpreter/ast"
 	"Yum-Programming-Language-Interpreter/internal"
 	"Yum-Programming-Language-Interpreter/lexer"
-	"strings"
 	"fmt"
 	"github.com/spf13/afero"
+	"strings"
 	"testing"
 )
 
 func TestParser(t *testing.T) {
-	tCs := []struct{
-		input []byte
+	tCs := []struct {
+		input           []byte
 		outputNodeTypes []ast.NodeType
-		numErrs int
-		outputLiteral string
+		numErrs         int
+		outputLiteral   string
 	}{
 		{
 			[]byte("var x = 3;"),
@@ -57,25 +57,25 @@ func TestParser(t *testing.T) {
 			[]byte("if (true & false | 3 < 2) {print(33);};"),
 			[]ast.NodeType{ast.IfStatementNode},
 			0,
-			"if((true&false)|(3<2)){print(33);};",
+			"if(((true&false)|(3<2))){print(33);};",
 		},
 		{
 			[]byte("if (3 < 2) {print(33);} else {print(\"howdy\");};"),
 			[]ast.NodeType{ast.IfStatementNode},
 			0,
-			"if (3 < 2) {print(33);} else {print(\"howdy\");};",
+			"if ((3 < 2)) {print(33);} else {print(\"howdy\");};",
 		},
 		{
 			[]byte("while (3 < 2) {print(3 & 22);};"),
 			[]ast.NodeType{ast.WhileStatementNode},
 			0,
-			"while(3<2){print((3 & 22));};",
+			"while((3<2)){print((3 & 22));};",
 		},
 		{
 			[]byte("while (true & false) {var x = 3;};"),
 			[]ast.NodeType{ast.WhileStatementNode},
 			0,
-			"while (true & false) {var x = 3;};",
+			"while ((true & false)) {var x = 3;};",
 		},
 		{
 			[]byte("func add(a,b,c) {return a + b + c;};"),
@@ -160,63 +160,54 @@ func TestParser(t *testing.T) {
 			[]ast.NodeType{ast.VarStatementNode},
 			0,
 			"var x = ((a + (b * c)) - d);",
-
 		},
 		{
 			[]byte("var x = a - b / c - d;"),
 			[]ast.NodeType{ast.VarStatementNode},
 			0,
 			"var x = ((a - (b / c)) - d);",
-
 		},
 		{
 			[]byte("var x = a * b / c - d;"),
 			[]ast.NodeType{ast.VarStatementNode},
 			0,
 			"var x = (((a * b) / c) - d);",
-
 		},
 		{
 			[]byte("var x = a * b / c * d;"),
 			[]ast.NodeType{ast.VarStatementNode},
 			0,
 			"var x = (((a * b) / c) * d);",
-
 		},
 		{
 			[]byte("var x = false & true & false;"),
 			[]ast.NodeType{ast.VarStatementNode},
 			0,
 			"var x = ((false & true) & false);",
-
 		},
 		{
 			[]byte("var x = false & true | false;"),
 			[]ast.NodeType{ast.VarStatementNode},
 			0,
 			"var x = ((false & true) | false);",
-
 		},
 		{
 			[]byte("var x = false | true & 3 <= 5 | false;"),
 			[]ast.NodeType{ast.VarStatementNode},
 			0,
 			"var x = ((false | (true & (3 <= 5))) | false);",
-
 		},
 		{
 			[]byte("var x = 1 < 2 & false;"),
 			[]ast.NodeType{ast.VarStatementNode},
 			0,
 			"var x = ((1 < 2) & false);",
-
 		},
 		{
 			[]byte("var x = 1 < 2 & 3 >= 4;"),
 			[]ast.NodeType{ast.VarStatementNode},
 			0,
 			"var x = ((1 < 2) & (3 >= 4));",
-
 		},
 		{
 			[]byte("func (2 < 3) { var x = 000;}; print(x);"),
@@ -224,7 +215,25 @@ func TestParser(t *testing.T) {
 			1, // function name not given
 			"",
 		},
-
+		{
+			[]byte("func helloName(name) {var stmt = \"Hello, \" + name + \"!\";print(stmt);};func main() {var " +
+				"firstName = \"Eric\";helloName(firstName);};main();"),
+			[]ast.NodeType{ast.FunctionDeclarationStatementNode, ast.FunctionDeclarationStatementNode,
+				ast.FunctionCallStatementNode},
+			0,
+			"func helloName(name) {var stmt = ((\"Hello,\"+ name) + \"!\"); print(stmt); }; " +
+				"func main(){var firstName = \"Eric\"; helloName(firstName);};" +
+				"main();",
+		},
+		{
+			[]byte("func defineFunc() { func helloWorld() { print(\"hello world\"); }; print(\"made hello " +
+				"world\");}; defineFunc();helloWorld();"),
+			[]ast.NodeType{ast.FunctionDeclarationStatementNode, ast.FunctionCallStatementNode,
+				ast.FunctionCallStatementNode},
+			0,
+			"func defineFunc() { func helloWorld() { print(\"hello world\"); }; print(\"made hello " +
+				"world\");}; defineFunc();helloWorld();",
+		},
 	}
 
 	var (
@@ -239,12 +248,12 @@ func TestParser(t *testing.T) {
 
 	for i, tC := range tCs {
 		var (
-			f   afero.File
-			l   lexer.Lexer
-			p Parser
-			fp  string
+			f    afero.File
+			l    lexer.Lexer
+			p    Parser
+			fp   string
 			prog *ast.Program
-			err error
+			err  error
 			errs []error
 		)
 
@@ -255,19 +264,19 @@ func TestParser(t *testing.T) {
 		}
 
 		if _, err = fs.Stat(fp); err != nil {
-			t.Errorf("file \"%s\" does not exist.\n", fp)
+			t.Fatalf("file \"%s\" does not exist.\n", fp)
 		}
 
 		if f, err = fs.Open(fp); err != nil {
-			t.Errorf(err.Error())
+			t.Fatalf(err.Error())
 		}
 
 		if l, err = lexer.NewLexer(f); err != nil {
-			t.Errorf(err.Error())
+			t.Fatalf(err.Error())
 		}
 
 		if p, err = NewRecursiveDescentParser(l); err != nil {
-			t.Errorf(err.Error())
+			t.Fatalf(err.Error())
 		}
 
 		prog, errs = p.Parse()
@@ -307,12 +316,10 @@ func TestParser(t *testing.T) {
 		parsedStr = strings.Replace(parsedStr, " ", "", -1)
 		parsedStr = strings.Replace(parsedStr, "\n", "", -1)
 
-
 		if expectedStr != parsedStr {
 			t.Errorf(internal.ErrInvalidASTNodeLiteralTest, i+1, parsedStr, expectedStr)
 			return
 		}
-
 
 	}
 	return

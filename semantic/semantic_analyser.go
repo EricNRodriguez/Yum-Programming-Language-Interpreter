@@ -101,8 +101,8 @@ func (sA *semanticAnalyser) analyseArrayIndexExpression(node ast.Node) {
 		return
 	}
 
-	if aIExpr.IndexExpr.Type() == ast.ArrayExpressionNode|| aIExpr.IndexExpr.Type() == ast.FloatingPointExpressionNode ||
-		aIExpr.IndexExpr.Type() == ast.StringExpressionNode|| aIExpr.IndexExpr.Type() == ast.BooleanExpressionNode {
+	if aIExpr.IndexExpr.Type() == ast.ArrayExpressionNode || aIExpr.IndexExpr.Type() == ast.FloatingPointExpressionNode ||
+		aIExpr.IndexExpr.Type() == ast.StringExpressionNode || aIExpr.IndexExpr.Type() == ast.BooleanExpressionNode {
 		errMsg := fmt.Sprintf(internal.ErrInvalidIndexType, aIExpr.IndexExpr.Type())
 		sA.recordError(internal.NewError(aIExpr.Metadata, errMsg, internal.SemanticErr))
 		return

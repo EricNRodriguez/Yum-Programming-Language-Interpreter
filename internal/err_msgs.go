@@ -17,7 +17,7 @@ const (
 	ErrDeclaredFunction              = "%v declared in file"
 	ErrInvalidFunctionCallParameters = "%v requires %v parameters, %v given"
 	ErrUndeclaredIdentifierNode      = "%v not declared"
-	ErrInvalidIndexType = "%v is not a valid index"
+	ErrInvalidIndexType              = "%v is not a valid index"
 
 	// runtime errors
 	ErrDivisionByZero   = "division by zero"
@@ -31,11 +31,17 @@ const (
 	ErrFailedToReadFile  = "failed to read file %v | %v"
 
 	// test errors
-	ErrInvalidTokenTypeTest    = "test case %v | token type %v received, expected %v"
-	ErrInvalidTokenLiteralTest = "test case %v | token literal %v received, expected %v"
-	ErrInvalidASTNodeTypeTest = "test case %v | node type %v received, expected %v"
-	ErrInvalidASTNodeLiteralTest = "test case %v | node literal %v received, expected %v"
-	ErrInvalidNumberOfErrorsTest = "test case %v | expected %v errors, received %v"
-	ErrInvalidNumberOfASTNodesTest = "test case %v | expected %v ast nodes, received %v"
-	ErrInvalidSemanticAnalysisTestCases = "test case %v | invalid test cases, %v syntax errors occured"
+	ErrInvalidTokenTypeTest                   = "test case %v | token type %v received, expected %v"
+	ErrInvalidTokenLiteralTest                = "test case %v | token literal %v received, expected %v"
+	ErrInvalidASTNodeTypeTest                 = "test case %v | node type %v received, expected %v"
+	ErrInvalidASTNodeLiteralTest              = "test case %v | node literal %v received, expected %v"
+	ErrInvalidNumberOfErrorsTest              = "test case %v | expected %v errors, received %v"
+	ErrInvalidNumberOfASTNodesTest            = "test case %v | expected %v ast nodes, received %v"
+	ErrInvalidSyntaxSemanticAnalysisTestCases = "test case %v | invalid test case, %v syntax errors occurred"
+	ErrInvalidSemanticsEvaluationTestCases    = "test case %v | invalid test case, %v semantic errors occurred"
+	ErrInvalidSyntaxEvaluationTestCases       = "test case %v | invalid test case, %v syntax errors occurred"
+	ErrMissingSymbolTest = "test case %v | %v not present after execution, expected %v : %v"
+	ErrInvalidSymbolValueTest = "test case %v | expected %v : %v, received %v : %v"
+	ErrUnexpectedRuntimeError = "test case %v | unexpected %v"
+
 )

@@ -21,7 +21,8 @@ x = [1,2];
 x = x[1];
 
 var isEqual = hello == 1;
-var isEqual = true != (3 == 2);
+isEqual = true != (3 == 2);
+
 while (a < b & a <= b & a > b & a >= b) {
     x = x+1;
 };

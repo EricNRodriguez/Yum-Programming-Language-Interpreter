@@ -90,7 +90,9 @@ func (rdp *RecursiveDescentParser) parseStatement() (stmt ast.Statement, err err
 func (rdp *RecursiveDescentParser) parseVarStatement() (stmt ast.Statement) {
 	var (
 		iden     *ast.IdentifierExpression
+		expr     ast.Expression
 		varToken = rdp.currentToken()
+		err      error
 	)
 
 	if !rdp.expectTokenType(token.IdentifierToken) {
@@ -108,13 +110,13 @@ func (rdp *RecursiveDescentParser) parseVarStatement() (stmt ast.Statement) {
 	rdp.consume(2)
 
 	// skip stmts with syntax errors
-	if expr, err := rdp.parseExpression(MinPrecedence); err != nil {
+	if expr, err = rdp.parseExpression(MinPrecedence); err != nil {
 		rdp.recordError(err)
 		rdp.consumeStatement()
 		return
-	} else {
-		stmt = ast.NewVarStatement(varToken, iden, expr)
 	}
+
+	stmt = ast.NewVarStatement(varToken, iden, expr)
 
 	return
 }
@@ -153,7 +155,7 @@ func (rdp *RecursiveDescentParser) parseIdenStatement() (stmt ast.Statement) {
 
 		var (
 			expr ast.Expression
-			err error
+			err  error
 		)
 
 		if expr, err = rdp.parseExpression(MinPrecedence); err != nil {
@@ -258,7 +260,6 @@ func (rdp *RecursiveDescentParser) parseWhileStatement() (stmt ast.Statement) {
 	return
 }
 
-// THIS SHOULD RETURN AN ERROR AS WELL!
 func (rdp *RecursiveDescentParser) parseBlockStatement() (bStmt []ast.Statement) {
 	bStmt = make([]ast.Statement, 0)
 	if rdp.currentToken().Type() != token.LeftBraceToken {
@@ -273,7 +274,7 @@ func (rdp *RecursiveDescentParser) parseBlockStatement() (bStmt []ast.Statement)
 	for rdp.currentToken().Type() != token.RightBraceToken && rdp.currentToken().Type() != token.EOFToken {
 		var (
 			stmt ast.Statement
-			err error
+			err  error
 		)
 		if stmt, err = rdp.parseStatement(); err != nil {
 			rdp.recordError(err)
@@ -304,7 +305,7 @@ func (rdp *RecursiveDescentParser) parseFuncDeclarationStatement() (stmt ast.Sta
 		params []ast.IdentifierExpression
 		body   []ast.Statement
 		pExprs []ast.Expression // function parameter expressions
-		err error
+		err    error
 	)
 
 	if !rdp.expectTokenType(token.IdentifierToken) {

@@ -189,7 +189,7 @@ func NewStringExpression(md token.Metadata, l string) *StringExpression {
 }
 
 func (s *StringExpression) String() string {
-	return s.Literal
+	return fmt.Sprintf("\"%v\"", s.Literal)
 }
 
 func (s *StringExpression) Type() NodeType {

@@ -40,7 +40,7 @@ func NewAssignmentStatement(md token.Metadata, i *IdentifierExpression, e Expres
 }
 
 func (as *AssignmentStatement) String() string {
-	return fmt.Sprintf(" %v = %v;", as.IdentifierNode.String(), as.Expression.String())
+	return fmt.Sprintf("%v = %v;", as.IdentifierNode.String(), as.Expression.String())
 }
 
 func (as *AssignmentStatement) Type() NodeType {
@@ -113,10 +113,10 @@ func NewIfStatement(t token.Token, c Expression, tb, fb []Statement) Statement {
 
 func (ifs *IfStatement) String() string {
 	if ifs.ElseBlock != nil {
-		return fmt.Sprintf("if %v { %v } else { %v };", ifs.Condition.String(), statementArrayNodeToString(ifs.IfBlock),
+		return fmt.Sprintf("if (%v) { %v } else { %v };", ifs.Condition.String(), statementArrayNodeToString(ifs.IfBlock),
 			statementArrayNodeToString(ifs.ElseBlock))
 	} else {
-		return fmt.Sprintf("if %v { %v };", ifs.Condition.String(), statementArrayNodeToString(ifs.IfBlock))
+		return fmt.Sprintf("if (%v) { %v };", ifs.Condition.String(), statementArrayNodeToString(ifs.IfBlock))
 	}
 }
 
@@ -184,11 +184,8 @@ func (fds *FunctionDeclarationStatement) statementFunction() {}
 func statementArrayNodeToString(staArr []Statement) string {
 	strBuff := bytes.Buffer{}
 
-	for i, sta := range staArr {
+	for _, sta := range staArr {
 		strBuff.WriteString(sta.String())
-		if i != len(staArr) - 1 {
-			strBuff.WriteString(", ")
-		}
 	}
 
 	return strBuff.String()

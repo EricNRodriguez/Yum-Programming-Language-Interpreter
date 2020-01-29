@@ -10,7 +10,7 @@ import (
 	"strconv"
 )
 
-type nudMethod func() (ast.Expression, error)                                   // prefix
+type nudMethod func() (ast.Expression, error)                          // prefix
 type ledMethod func(expression ast.Expression) (ast.Expression, error) //infix
 
 type operatorPrecedence int
@@ -143,8 +143,7 @@ func (pp *prattParser) currentPrecedence() operatorPrecedence {
 func (pp *prattParser) parseArrayNodeDeclaration() (expr ast.Expression, err error) {
 	var (
 		arrayExprs []ast.Expression
-		md = pp.currentToken().Data()
-
+		md         = pp.currentToken().Data()
 	)
 
 	if arrayExprs, err = pp.parseParameters(true); err != nil {
@@ -174,7 +173,7 @@ func (pp *prattParser) parsePrefixOperator() (expr ast.Expression, err error) {
 
 func (pp *prattParser) parseInteger() (expr ast.Expression, err error) {
 	var (
-		i   int64
+		i int64
 	)
 
 	// convert string literal to int
@@ -192,7 +191,7 @@ func (pp *prattParser) parseInteger() (expr ast.Expression, err error) {
 
 func (pp *prattParser) parseFloatingPointNumber() (expr ast.Expression, err error) {
 	var (
-		i   float64
+		i float64
 	)
 
 	// convert string literal to int
@@ -299,7 +298,6 @@ func (pp *prattParser) parseIdent() (expr ast.Expression, err error) {
 			return
 		}
 		expr = ast.NewFunctionCallExpression(idenToken.Data(), idenToken.Literal(), params...)
-
 
 	} else if pp.peekToken().Type() == token.LeftBracketToken {
 		// ArrayNode index

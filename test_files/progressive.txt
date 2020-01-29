@@ -1,4 +1,1 @@
-
-var x = 22;
-var y = 23*22/10;
-var u = "hello";
+var x = *3;
